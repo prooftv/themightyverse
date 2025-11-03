@@ -84,93 +84,65 @@ export default function AnimatorDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="mighty-verse-app min-h-screen">
       {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Animator Portal</h1>
-              <p className="mt-1 text-sm text-gray-500">Upload and manage your animation submissions</p>
-            </div>
-            <div className="text-sm text-gray-500">
-              Animator: <code className="bg-gray-100 px-2 py-1 rounded">{wallet?.slice(0, 8)}...</code>
-            </div>
-          </div>
+      <div className="mv-nav mx-4 mt-4">
+        <div className="mv-nav-brand">
+          <h1 className="mv-heading-lg">◈ Animator Portal</h1>
+          <p className="mv-text-muted text-sm">Upload and manage your 2.5D holographic animations</p>
+        </div>
+        <div className="mv-text-muted text-sm">
+          Animator: <code className="bg-white/10 px-2 py-1 rounded text-yellow-400">{wallet?.slice(0, 8)}...</code>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm">📊</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Submissions</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{stats.total}</dd>
-                  </dl>
-                </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-4 mb-8">
+          <div className="mv-card mv-holographic p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-green-400 rounded-xl flex items-center justify-center">
+                <span className="text-black text-lg font-bold">◯</span>
+              </div>
+              <div className="flex-1">
+                <div className="mv-text-muted text-sm mb-1">Total Submissions</div>
+                <div className="text-2xl font-bold text-white">{stats.total}</div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm">✅</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Approved</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{stats.approved}</dd>
-                  </dl>
-                </div>
+          <div className="mv-card mv-holographic p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-400 rounded-xl flex items-center justify-center">
+                <span className="text-black text-lg font-bold">◆</span>
+              </div>
+              <div className="flex-1">
+                <div className="mv-text-muted text-sm mb-1">Approved</div>
+                <div className="text-2xl font-bold text-white">{stats.approved}</div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm">⏳</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Pending Review</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{stats.pending}</dd>
-                  </dl>
-                </div>
+          <div className="mv-card mv-holographic p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-xl flex items-center justify-center">
+                <span className="text-black text-lg font-bold">◈</span>
+              </div>
+              <div className="flex-1">
+                <div className="mv-text-muted text-sm mb-1">Pending Review</div>
+                <div className="text-2xl font-bold text-white">{stats.pending}</div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm">❌</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Rejected</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{stats.rejected}</dd>
-                  </dl>
-                </div>
+          <div className="mv-card mv-holographic p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-pink-400 rounded-xl flex items-center justify-center">
+                <span className="text-black text-lg font-bold">◇</span>
+              </div>
+              <div className="flex-1">
+                <div className="mv-text-muted text-sm mb-1">Rejected</div>
+                <div className="text-2xl font-bold text-white">{stats.rejected}</div>
               </div>
             </div>
           </div>
@@ -178,94 +150,89 @@ export default function AnimatorDashboard() {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <h2 className="mv-heading-md mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <Link href="/animator/upload">
-              <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer border-2 border-dashed border-gray-300 hover:border-blue-500">
-                <div className="text-center">
-                  <div className="text-4xl mb-3">📤</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Upload New Asset</h3>
-                  <p className="text-sm text-gray-500">Submit a new animation for review</p>
-                </div>
+              <div className="mv-card mv-holographic p-8 cursor-pointer group text-center border-2 border-dashed border-white/20 hover:border-yellow-400/50">
+                <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-500">◈</div>
+                <h3 className="mv-heading-md mb-2">Upload New Asset</h3>
+                <p className="mv-text-muted text-sm">Submit a new 2.5D holographic animation</p>
               </div>
             </Link>
 
             <Link href="/animator/submissions">
-              <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
-                <div className="text-center">
-                  <div className="text-4xl mb-3">📋</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">View Submissions</h3>
-                  <p className="text-sm text-gray-500">Track status of your submissions</p>
-                </div>
+              <div className="mv-card p-8 cursor-pointer group text-center">
+                <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-500">◆</div>
+                <h3 className="mv-heading-md mb-2">View Submissions</h3>
+                <p className="mv-text-muted text-sm">Track status of your submissions</p>
               </div>
             </Link>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="text-center">
-                <div className="text-4xl mb-3">📚</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Guidelines</h3>
-                <p className="text-sm text-gray-500">Review submission requirements</p>
-              </div>
+            <div className="mv-card p-8 text-center group">
+              <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-500">◉</div>
+              <h3 className="mv-heading-md mb-2">Guidelines</h3>
+              <p className="mv-text-muted text-sm">Review submission requirements</p>
             </div>
           </div>
         </div>
 
         {/* Recent Submissions */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Recent Submissions</h3>
-              <Link href="/animator/submissions" className="text-sm text-blue-600 hover:text-blue-500">
-                View all
-              </Link>
-            </div>
+        <div className="mv-card p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="mv-heading-md">Recent Submissions</h3>
+            <Link href="/animator/submissions" className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors">
+              View all
+            </Link>
+          </div>
             
-            <div className="space-y-4">
-              {submissions.slice(0, 3).map((submission) => (
-                <div key={submission.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="h-10 w-10 bg-gray-300 rounded-lg flex items-center justify-center">
-                        <span className="text-gray-600 text-sm">🎬</span>
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-900">{submission.title}</p>
-                      <div className="flex items-center mt-1 text-sm text-gray-500">
-                        <span>{new Date(submission.submittedAt).toLocaleDateString()}</span>
-                        {submission.confidence && (
-                          <>
-                            <span className="mx-2">•</span>
-                            <span className={`font-medium ${submission.confidence >= 0.8 ? 'text-green-600' : 'text-yellow-600'}`}>
-                              {Math.round(submission.confidence * 100)}% confidence
-                            </span>
-                          </>
-                        )}
-                      </div>
-                      {submission.feedback && (
-                        <p className="mt-1 text-sm text-gray-600">{submission.feedback}</p>
+          <div className="space-y-6">
+            {submissions.slice(0, 3).map((submission) => (
+              <div key={submission.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 rounded-xl flex items-center justify-center">
+                    <span className="text-black text-lg font-bold">◈</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-medium">{submission.title}</p>
+                    <div className="flex items-center mt-1 text-sm mv-text-muted">
+                      <span>{new Date(submission.submittedAt).toLocaleDateString()}</span>
+                      {submission.confidence && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span className={`font-medium ${submission.confidence >= 0.8 ? 'text-green-400' : 'text-yellow-400'}`}>
+                            {Math.round(submission.confidence * 100)}% confidence
+                          </span>
+                        </>
                       )}
                     </div>
+                    {submission.feedback && (
+                      <p className="mt-1 text-sm mv-text-muted">{submission.feedback}</p>
+                    )}
                   </div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[submission.status]}`}>
-                    {submission.status}
-                  </span>
                 </div>
-              ))}
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  submission.status === 'approved' ? 'mv-status-success' :
+                  submission.status === 'rejected' ? 'mv-status-error' :
+                  'mv-status-pending'
+                }`}>
+                  {submission.status}
+                </span>
+              </div>
+            ))}
             </div>
 
-            {submissions.length === 0 && (
-              <div className="text-center py-8">
-                <div className="text-4xl mb-4">🎨</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No submissions yet</h3>
-                <p className="text-sm text-gray-500 mb-4">Get started by uploading your first animation</p>
-                <Link
-                  href="/animator/upload"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  Upload Asset
-                </Link>
-              </div>
-            )}
+          {submissions.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-8xl mb-6">◈</div>
+              <h3 className="mv-heading-md mb-2">No submissions yet</h3>
+              <p className="mv-text-muted mb-6">Get started by uploading your first 2.5D holographic animation</p>
+              <Link href="/animator/upload">
+                <button className="mv-button">
+                  ◆ Upload Asset ◆
+                </button>
+              </Link>
+            </div>
+          )}
           </div>
         </div>
       </div>

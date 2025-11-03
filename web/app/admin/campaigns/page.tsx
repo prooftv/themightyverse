@@ -1,359 +1,171 @@
 'use client';
 
-/**
- * Campaign Management Page
- * Manage sponsor advertising campaigns and ad placements
- */
-
 import React, { useState } from 'react';
-import { useRBAC } from '../../auth/rbac-provider';
 import Link from 'next/link';
 
 interface Campaign {
   id: string;
   name: string;
-  sponsor: {
-    name: string;
-    wallet: string;
-    contact: string;
-  };
   status: 'draft' | 'active' | 'paused' | 'completed';
-  budget: {
-    total: number;
-    spent: number;
-    currency: string;
-  };
-  anchors: {
-    reserved: number;
-    active: number;
-  };
-  metrics: {
-    impressions: number;
-    clicks: number;
-    ctr: number;
-  };
+  budget: number;
+  spent: number;
+  impressions: number;
+  clicks: number;
   startDate: string;
   endDate: string;
-  createdAt: string;
 }
 
 const mockCampaigns: Campaign[] = [
-  {
-    id: 'camp_001',
-    name: 'Nike Air Max Campaign',
-    sponsor: {
-      name: 'Nike',
-      wallet: '0xabcd...1234',
-      contact: 'campaigns@nike.com'
-    },
-    status: 'active',
-    budget: {
-      total: 5000,
-      spent: 1250,
-      currency: 'USD'
-    },
-    anchors: {
-      reserved: 8,
-      active: 6
-    },
-    metrics: {
-      impressions: 12500,
-      clicks: 375,
-      ctr: 3.0
-    },
-    startDate: '2025-01-20T00:00:00Z',
-    endDate: '2025-02-20T00:00:00Z',
-    createdAt: '2025-01-15T10:30:00Z'
-  },
-  {
-    id: 'camp_002',
-    name: 'Spotify Premium Promo',
-    sponsor: {
-      name: 'Spotify',
-      wallet: '0xefgh...5678',
-      contact: 'ads@spotify.com'
-    },
-    status: 'draft',
-    budget: {
-      total: 3000,
-      spent: 0,
-      currency: 'USD'
-    },
-    anchors: {
-      reserved: 4,
-      active: 0
-    },
-    metrics: {
-      impressions: 0,
-      clicks: 0,
-      ctr: 0
-    },
-    startDate: '2025-02-01T00:00:00Z',
-    endDate: '2025-02-28T00:00:00Z',
-    createdAt: '2025-01-25T14:15:00Z'
-  }
+  { id: '1', name: 'Afrofuturism Launch', status: 'active', budget: 5000, spent: 1250, impressions: 45000, clicks: 890, startDate: '2025-01-20', endDate: '2025-02-20' },
+  { id: '2', name: 'Cultural Heritage', status: 'paused', budget: 3000, spent: 800, impressions: 12000, clicks: 240, startDate: '2025-01-15', endDate: '2025-02-15' },
+  { id: '3', name: 'Holographic Art', status: 'draft', budget: 7500, spent: 0, impressions: 0, clicks: 0, startDate: '2025-02-01', endDate: '2025-03-01' }
 ];
 
-const statusColors = {
-  draft: 'bg-gray-100 text-gray-800',
-  active: 'bg-green-100 text-green-800',
-  paused: 'bg-yellow-100 text-yellow-800',
-  completed: 'bg-blue-100 text-blue-800'
-};
+export default function AdminCampaigns() {
+  const [campaigns] = useState<Campaign[]>(mockCampaigns);
+  const [filter, setFilter] = useState<'all' | 'active' | 'paused' | 'draft'>('all');
 
-export default function CampaignManagement() {
-  const { isAdmin, isCurator } = useRBAC();
-  const [campaigns, setCampaigns] = useState<Campaign[]>(mockCampaigns);
-  const [filter, setFilter] = useState<'all' | Campaign['status']>('all');
+  const filteredCampaigns = campaigns.filter(c => filter === 'all' || c.status === filter);
 
-  const canManage = isAdmin || isCurator;
-
-  const filteredCampaigns = campaigns.filter(campaign => 
-    filter === 'all' || campaign.status === filter
-  );
-
-  const handleStatusChange = (campaignId: string, newStatus: Campaign['status']) => {
-    setCampaigns(prev => prev.map(campaign =>
-      campaign.id === campaignId ? { ...campaign, status: newStatus } : campaign
-    ));
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  if (!canManage) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600">Admin or Curator privileges required</p>
-        </div>
-      </div>
-    );
-  }
-
-  const stats = {
-    total: campaigns.length,
-    active: campaigns.filter(c => c.status === 'active').length,
-    totalBudget: campaigns.reduce((sum, c) => sum + c.budget.total, 0),
-    totalSpent: campaigns.reduce((sum, c) => sum + c.budget.spent, 0)
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'mv-status-success';
+      case 'paused': return 'mv-status-pending';
+      case 'draft': return 'bg-gray-400/10 text-gray-400 border border-gray-400/30 rounded-full px-3 py-1 text-sm';
+      case 'completed': return 'bg-blue-400/10 text-blue-400 border border-blue-400/30 rounded-full px-3 py-1 text-sm';
+      default: return 'mv-status-pending';
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <nav className="flex mb-2" aria-label="Breadcrumb">
-                <ol className="flex items-center space-x-4">
-                  <li>
-                    <Link href="/admin" className="text-gray-400 hover:text-gray-500">
-                      Admin
-                    </Link>
-                  </li>
-                  <li><span className="text-gray-400">/</span></li>
-                  <li><span className="text-gray-900 font-medium">Campaigns</span></li>
-                </ol>
-              </nav>
-              <h1 className="text-2xl font-bold text-gray-900">Campaign Management</h1>
-              <p className="text-sm text-gray-500">Manage sponsor advertising campaigns and placements</p>
-            </div>
-            <Link
-              href="/admin/campaigns/new"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-            >
-              New Campaign
-            </Link>
-          </div>
+    <div className="mighty-verse-app min-h-screen">
+      <div className="mv-nav mx-4 mt-4">
+        <div className="mv-nav-brand">
+          <Link href="/admin" className="mv-heading-lg hover:text-yellow-400 transition-colors">
+            ◆ Admin / Campaigns
+          </Link>
+        </div>
+        <div>
+          <Link href="/admin/campaigns/new">
+            <button className="mv-button">◆ New Campaign</button>
+          </Link>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm">📊</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Campaigns</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{stats.total}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="mv-heading-xl mb-4">◈ Campaign Management ◈</h1>
+        </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm">🟢</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Active</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{stats.active}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
+        {/* Campaign Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="mv-card mv-holographic p-6 text-center">
+            <div className="text-4xl mb-2">◆</div>
+            <div className="mv-heading-md">{campaigns.filter(c => c.status === 'active').length}</div>
+            <div className="mv-text-muted text-sm">Active</div>
           </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm">💰</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Budget</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">
-                      {formatCurrency(stats.totalBudget, 'USD')}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
+          <div className="mv-card mv-holographic p-6 text-center">
+            <div className="text-4xl mb-2">◈</div>
+            <div className="mv-heading-md">${campaigns.reduce((sum, c) => sum + c.spent, 0).toLocaleString()}</div>
+            <div className="mv-text-muted text-sm">Total Spent</div>
           </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
-                    <span className="text-white text-sm">📈</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Spent</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">
-                      {formatCurrency(stats.totalSpent, 'USD')}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
+          <div className="mv-card mv-holographic p-6 text-center">
+            <div className="text-4xl mb-2">◉</div>
+            <div className="mv-heading-md">{campaigns.reduce((sum, c) => sum + c.impressions, 0).toLocaleString()}</div>
+            <div className="mv-text-muted text-sm">Impressions</div>
+          </div>
+          <div className="mv-card mv-holographic p-6 text-center">
+            <div className="text-4xl mb-2">◇</div>
+            <div className="mv-heading-md">{campaigns.reduce((sum, c) => sum + c.clicks, 0).toLocaleString()}</div>
+            <div className="mv-text-muted text-sm">Clicks</div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mb-6">
-          <div className="flex space-x-4">
-            {(['all', 'draft', 'active', 'paused', 'completed'] as const).map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilter(status)}
-                className={`px-3 py-2 text-sm font-medium rounded-md ${
-                  filter === status
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-                <span className="ml-2 bg-gray-200 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                  {status === 'all' ? campaigns.length : campaigns.filter(c => c.status === status).length}
-                </span>
-              </button>
-            ))}
-          </div>
+        <div className="flex gap-4 mb-8 justify-center">
+          {['all', 'active', 'paused', 'draft'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilter(status as any)}
+              className={`px-6 py-3 rounded-xl transition-all duration-300 ${
+                filter === status ? 'mv-button' : 'mv-button-secondary'
+              }`}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </button>
+          ))}
         </div>
 
         {/* Campaigns List */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
-            {filteredCampaigns.map((campaign) => (
-              <li key={campaign.id}>
-                <Link href={`/admin/campaigns/${campaign.id}`}>
-                  <div className="px-4 py-4 sm:px-6 hover:bg-gray-50 cursor-pointer">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                          <div className="h-10 w-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                            <span className="text-white text-sm font-medium">
-                              {campaign.sponsor.name.charAt(0)}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="flex items-center">
-                            <p className="text-sm font-medium text-gray-900">{campaign.name}</p>
-                            <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[campaign.status]}`}>
-                              {campaign.status}
-                            </span>
-                          </div>
-                          <div className="mt-1 flex items-center text-sm text-gray-500">
-                            <span>{campaign.sponsor.name}</span>
-                            <span className="mx-2">•</span>
-                            <span>{campaign.anchors.active}/{campaign.anchors.reserved} anchors active</span>
-                            <span className="mx-2">•</span>
-                            <span>{formatDate(campaign.startDate)} - {formatDate(campaign.endDate)}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-gray-900">
-                            {formatCurrency(campaign.budget.spent, campaign.budget.currency)} / {formatCurrency(campaign.budget.total, campaign.budget.currency)}
-                          </p>
-                          <div className="mt-1 w-24 bg-gray-200 rounded-full h-1.5">
-                            <div 
-                              className="bg-blue-500 h-1.5 rounded-full"
-                              style={{ width: `${(campaign.budget.spent / campaign.budget.total) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                        {campaign.status === 'active' && (
-                          <div className="text-right">
-                            <p className="text-sm text-gray-500">CTR</p>
-                            <p className="text-sm font-medium text-gray-900">{campaign.metrics.ctr}%</p>
-                          </div>
-                        )}
-                      </div>
+        <div className="space-y-6">
+          {filteredCampaigns.map((campaign) => (
+            <div key={campaign.id} className="mv-card mv-holographic p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-green-400 rounded-xl flex items-center justify-center">
+                    <span className="text-black text-lg font-bold">◈</span>
+                  </div>
+                  <div>
+                    <h3 className="mv-heading-md">{campaign.name}</h3>
+                    <div className="mv-text-muted text-sm">
+                      {new Date(campaign.startDate).toLocaleDateString()} - {new Date(campaign.endDate).toLocaleDateString()}
                     </div>
                   </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+                </div>
+                <div className={getStatusColor(campaign.status)}>
+                  {campaign.status}
+                </div>
+              </div>
 
-        {filteredCampaigns.length === 0 && (
-          <div className="text-center py-12">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No campaigns found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              No campaigns match the current filter criteria.
-            </p>
-          </div>
-        )}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                <div className="bg-white/5 p-3 rounded-xl">
+                  <div className="mv-text-muted text-sm">Budget</div>
+                  <div className="text-white font-semibold">${campaign.budget.toLocaleString()}</div>
+                </div>
+                <div className="bg-white/5 p-3 rounded-xl">
+                  <div className="mv-text-muted text-sm">Spent</div>
+                  <div className="text-white font-semibold">${campaign.spent.toLocaleString()}</div>
+                </div>
+                <div className="bg-white/5 p-3 rounded-xl">
+                  <div className="mv-text-muted text-sm">Impressions</div>
+                  <div className="text-white font-semibold">{campaign.impressions.toLocaleString()}</div>
+                </div>
+                <div className="bg-white/5 p-3 rounded-xl">
+                  <div className="mv-text-muted text-sm">Clicks</div>
+                  <div className="text-white font-semibold">{campaign.clicks.toLocaleString()}</div>
+                </div>
+                <div className="bg-white/5 p-3 rounded-xl">
+                  <div className="mv-text-muted text-sm">CTR</div>
+                  <div className="text-white font-semibold">
+                    {campaign.impressions > 0 ? ((campaign.clicks / campaign.impressions) * 100).toFixed(2) : '0.00'}%
+                  </div>
+                </div>
+              </div>
+
+              {/* Budget Progress */}
+              <div className="mb-4">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="mv-text-muted">Budget Usage</span>
+                  <span className="text-white">{Math.round((campaign.spent / campaign.budget) * 100)}%</span>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-yellow-400 to-green-400 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min((campaign.spent / campaign.budget) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button className="mv-button-secondary px-4 py-2 text-sm">◆ Edit</button>
+                <button className="mv-button-secondary px-4 py-2 text-sm">◈ Analytics</button>
+                {campaign.status === 'active' && (
+                  <button className="mv-button-secondary px-4 py-2 text-sm">◇ Pause</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -54,47 +54,37 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="mighty-verse-app min-h-screen">
       {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="mt-1 text-sm text-gray-500">The Mighty Verse Platform Administration</p>
-            </div>
-            <div className="text-sm text-gray-500">
-              Admin: <code className="bg-gray-100 px-2 py-1 rounded">{wallet?.slice(0, 8)}...</code>
-            </div>
-          </div>
+      <div className="mv-nav mx-4 mt-4">
+        <div className="mv-nav-brand">
+          <h1 className="mv-heading-lg">Admin Dashboard</h1>
+          <p className="mv-text-muted text-sm">The Mighty Verse Platform Administration</p>
+        </div>
+        <div className="mv-text-muted text-sm">
+          Admin: <code className="bg-white/10 px-2 py-1 rounded text-mv-text-accent">{wallet?.slice(0, 8)}...</code>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           {stats.map((stat) => (
             <Link key={stat.name} href={stat.href}>
-              <div className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow cursor-pointer">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">{stat.value.charAt(0)}</span>
+              <div className="mv-card mv-holographic p-6 cursor-pointer">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-green-400 rounded-xl flex items-center justify-center">
+                    <span className="text-black text-lg font-bold">{stat.value.charAt(0)}</span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="mv-text-muted text-sm mb-1">{stat.name}</div>
+                    <div className="flex items-baseline space-x-2">
+                      <div className="text-2xl font-bold text-white">{stat.value}</div>
+                      <div className={`text-sm font-semibold ${
+                        stat.changeType === 'increase' ? 'mv-text-energy' : 'text-red-400'
+                      }`}>
+                        {stat.change}
                       </div>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">{stat.name}</dt>
-                        <dd className="flex items-baseline">
-                          <div className="text-2xl font-semibold text-gray-900">{stat.value}</div>
-                          <div className={`ml-2 flex items-baseline text-sm font-semibold ${
-                            stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            {stat.change}
-                          </div>
-                        </dd>
-                      </dl>
                     </div>
                   </div>
                 </div>
@@ -105,14 +95,14 @@ export default function AdminDashboard() {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="mv-heading-md mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {quickActions.map((action) => (
               <Link key={action.name} href={action.href}>
-                <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="text-3xl mb-3">{action.icon}</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">{action.name}</h3>
-                  <p className="text-sm text-gray-500">{action.description}</p>
+                <div className="mv-card p-6 cursor-pointer group">
+                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{action.icon}</div>
+                  <h3 className="mv-heading-md mb-2">{action.name}</h3>
+                  <p className="mv-text-muted text-sm">{action.description}</p>
                 </div>
               </Link>
             ))}
@@ -120,43 +110,30 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Recent Activity</h3>
-            <div className="flow-root">
-              <ul className="-mb-8">
-                {[
-                  { action: 'Asset submitted', user: '0x1234...5678', time: '2 hours ago', type: 'asset' },
-                  { action: 'Role assigned', user: '0x9876...5432', time: '4 hours ago', type: 'role' },
-                  { action: 'Campaign created', user: '0xabcd...efgh', time: '6 hours ago', type: 'campaign' },
-                ].map((item, idx) => (
-                  <li key={idx}>
-                    <div className="relative pb-8">
-                      {idx !== 2 && (
-                        <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" />
-                      )}
-                      <div className="relative flex space-x-3">
-                        <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
-                          <span className="text-white text-xs">
-                            {item.type === 'asset' ? '📄' : item.type === 'role' ? '👤' : '📢'}
-                          </span>
-                        </div>
-                        <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                          <div>
-                            <p className="text-sm text-gray-500">
-                              {item.action} by <code className="text-gray-900">{item.user}</code>
-                            </p>
-                          </div>
-                          <div className="text-right text-sm whitespace-nowrap text-gray-500">
-                            {item.time}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+        <div className="mv-card p-6">
+          <h3 className="mv-heading-md mb-6">Recent Activity</h3>
+          <div className="space-y-6">
+            {[
+              { action: 'Asset submitted', user: '0x1234...5678', time: '2 hours ago', type: 'asset' },
+              { action: 'Role assigned', user: '0x9876...5432', time: '4 hours ago', type: 'role' },
+              { action: 'Campaign created', user: '0xabcd...efgh', time: '6 hours ago', type: 'campaign' },
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center space-x-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-green-400 flex items-center justify-center flex-shrink-0">
+                  <span className="text-black text-sm">
+                    {item.type === 'asset' ? '📄' : item.type === 'role' ? '👤' : '📢'}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white">
+                    {item.action} by <code className="mv-text-accent bg-white/10 px-2 py-1 rounded">{item.user}</code>
+                  </p>
+                </div>
+                <div className="mv-text-muted text-sm whitespace-nowrap">
+                  {item.time}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

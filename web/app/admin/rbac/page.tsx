@@ -1,165 +1,140 @@
 'use client';
 
-/**
- * Admin RBAC Management Page
- * Interface for admins to manage user roles
- */
+import React, { useState } from 'react';
+import Link from 'next/link';
 
-import React, { useState, useEffect } from 'react';
-import { useRBAC } from '../../auth/rbac-provider';
-import { Role } from '../../auth/roles';
-import RoleAssigner from './components/RoleAssigner';
-import RoleViewer from './components/RoleViewer';
-
-interface RoleAssignment {
+interface User {
+  id: string;
   wallet: string;
-  roles: Role[];
-  assignedAt: string;
-  assignedBy: string;
+  role: 'admin' | 'animator' | 'viewer';
+  status: 'active' | 'pending' | 'suspended';
+  joinedAt: string;
 }
 
-export default function RBACManagementPage() {
-  const { isAdmin, loading, wallet } = useRBAC();
-  const [activeTab, setActiveTab] = useState<'assign' | 'view'>('view');
-  const [assignments, setAssignments] = useState<RoleAssignment[]>([]);
-  const [loadingAssignments, setLoadingAssignments] = useState(false);
+const mockUsers: User[] = [
+  { id: '1', wallet: '0x1234...5678', role: 'admin', status: 'active', joinedAt: '2025-01-20T10:00:00Z' },
+  { id: '2', wallet: '0x9876...5432', role: 'animator', status: 'active', joinedAt: '2025-01-22T14:30:00Z' },
+  { id: '3', wallet: '0xabcd...efgh', role: 'viewer', status: 'pending', joinedAt: '2025-01-27T09:15:00Z' }
+];
 
-  // Load existing role assignments
-  useEffect(() => {
-    if (isAdmin) {
-      loadRoleAssignments();
-    }
-  }, [isAdmin]);
+export default function AdminRBAC() {
+  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [filter, setFilter] = useState<'all' | 'admin' | 'animator' | 'viewer'>('all');
 
-  const loadRoleAssignments = async () => {
-    setLoadingAssignments(true);
-    try {
-      // In production, this would fetch from IPFS or your backend
-      // For now, load from localStorage
-      const stored = localStorage.getItem('role_assignments');
-      if (stored) {
-        setAssignments(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error('Error loading role assignments:', error);
-    } finally {
-      setLoadingAssignments(false);
+  const filteredUsers = users.filter(user => filter === 'all' || user.role === filter);
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'admin': return '◆';
+      case 'animator': return '◈';
+      case 'viewer': return '◯';
+      default: return '◇';
     }
   };
 
-  const handleRoleAssigned = (assignment: RoleAssignment) => {
-    const updatedAssignments = [
-      ...assignments.filter(a => a.wallet !== assignment.wallet),
-      assignment
-    ];
-    setAssignments(updatedAssignments);
-    
-    // Store in localStorage for development
-    localStorage.setItem('role_assignments', JSON.stringify(updatedAssignments));
+  const updateUserRole = (userId: string, newRole: 'admin' | 'animator' | 'viewer') => {
+    setUsers(users.map(user => 
+      user.id === userId ? { ...user, role: newRole } : user
+    ));
   };
-
-  const handleRoleRevoked = (walletAddress: string) => {
-    const updatedAssignments = assignments.filter(a => a.wallet !== walletAddress);
-    setAssignments(updatedAssignments);
-    
-    // Store in localStorage for development
-    localStorage.setItem('role_assignments', JSON.stringify(updatedAssignments));
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600">You need admin privileges to access this page.</p>
-          <p className="text-sm text-gray-500 mt-2">Current wallet: {wallet}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Role Management</h1>
-          <p className="mt-2 text-gray-600">
-            Manage user roles and permissions for The Mighty Verse platform
-          </p>
+    <div className="mighty-verse-app min-h-screen">
+      <div className="mv-nav mx-4 mt-4">
+        <div className="mv-nav-brand">
+          <Link href="/admin" className="mv-heading-lg hover:text-yellow-400 transition-colors">
+            ◆ Admin / RBAC
+          </Link>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="mv-heading-xl mb-4">◈ Role Management ◈</h1>
+          <p className="mv-text-muted text-lg">Manage user roles and permissions</p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="mb-6">
-          <nav className="flex space-x-8">
+        {/* Role Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="mv-card mv-holographic p-6 text-center">
+            <div className="text-4xl mb-2">◆</div>
+            <div className="mv-heading-md">{users.filter(u => u.role === 'admin').length}</div>
+            <div className="mv-text-muted text-sm">Admins</div>
+          </div>
+          <div className="mv-card mv-holographic p-6 text-center">
+            <div className="text-4xl mb-2">◈</div>
+            <div className="mv-heading-md">{users.filter(u => u.role === 'animator').length}</div>
+            <div className="mv-text-muted text-sm">Animators</div>
+          </div>
+          <div className="mv-card mv-holographic p-6 text-center">
+            <div className="text-4xl mb-2">◯</div>
+            <div className="mv-heading-md">{users.filter(u => u.role === 'viewer').length}</div>
+            <div className="mv-text-muted text-sm">Viewers</div>
+          </div>
+          <div className="mv-card mv-holographic p-6 text-center">
+            <div className="text-4xl mb-2">◉</div>
+            <div className="mv-heading-md">{users.length}</div>
+            <div className="mv-text-muted text-sm">Total Users</div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex gap-4 mb-8 justify-center">
+          {['all', 'admin', 'animator', 'viewer'].map((role) => (
             <button
-              onClick={() => setActiveTab('view')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'view'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              key={role}
+              onClick={() => setFilter(role as any)}
+              className={`px-6 py-3 rounded-xl transition-all duration-300 flex items-center space-x-2 ${
+                filter === role ? 'mv-button' : 'mv-button-secondary'
               }`}
             >
-              Current Roles
+              <span>{role === 'all' ? '◉' : getRoleIcon(role)}</span>
+              <span>{role.charAt(0).toUpperCase() + role.slice(1)}</span>
             </button>
-            <button
-              onClick={() => setActiveTab('assign')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'assign'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Assign Roles
-            </button>
-          </nav>
+          ))}
         </div>
 
-        {/* Tab Content */}
-        <div className="bg-white shadow rounded-lg">
-          {activeTab === 'view' && (
-            <RoleViewer
-              assignments={assignments}
-              loading={loadingAssignments}
-              onRoleRevoked={handleRoleRevoked}
-              onRefresh={loadRoleAssignments}
-            />
-          )}
-          
-          {activeTab === 'assign' && (
-            <RoleAssigner
-              onRoleAssigned={handleRoleAssigned}
-              existingAssignments={assignments}
-            />
-          )}
-        </div>
-
-        {/* Admin Info */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">Admin Session</h3>
-              <div className="mt-2 text-sm text-blue-700">
-                <p>Logged in as: <code className="bg-blue-100 px-1 rounded">{wallet}</code></p>
-                <p className="mt-1">All role assignments require your signature and are stored on IPFS.</p>
+        {/* Users List */}
+        <div className="mv-card p-6">
+          <div className="space-y-4">
+            {filteredUsers.map((user) => (
+              <div key={user.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-green-400 rounded-xl flex items-center justify-center">
+                    <span className="text-black text-lg font-bold">{getRoleIcon(user.role)}</span>
+                  </div>
+                  <div>
+                    <div className="text-white font-medium">{user.wallet}</div>
+                    <div className="flex items-center space-x-2 text-sm mv-text-muted">
+                      <span>Joined {new Date(user.joinedAt).toLocaleDateString()}</span>
+                      <span>•</span>
+                      <span className={`${
+                        user.status === 'active' ? 'text-green-400' :
+                        user.status === 'pending' ? 'text-yellow-400' : 'text-red-400'
+                      }`}>
+                        {user.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <select
+                    value={user.role}
+                    onChange={(e) => updateUserRole(user.id, e.target.value as any)}
+                    className="bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:border-yellow-400 focus:outline-none"
+                  >
+                    <option value="admin">◆ Admin</option>
+                    <option value="animator">◈ Animator</option>
+                    <option value="viewer">◯ Viewer</option>
+                  </select>
+                  
+                  <button className="mv-button-secondary px-4 py-2 text-sm">
+                    Actions
+                  </button>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
