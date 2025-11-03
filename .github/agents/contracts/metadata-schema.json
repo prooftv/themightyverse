@@ -4,16 +4,16 @@
   "type": "object",
   "required": ["card_id", "asset_cid", "project", "depth_map", "segmentation", "transcription"],
   "properties": {
-    "card_id": {"type": "string"},
-    "asset_cid": {"type": "string"},
-    "project": {"type": "string"},
+    "card_id": {"type": "string", "minLength": 1},
+    "asset_cid": {"type": "string", "pattern": "^bafy[0-9a-zA-Z]{10,}$"},
+    "project": {"type": "string", "minLength": 1},
     "animator_version": {"type": "string"},
     "tags": {"type": "array", "items": {"type": "string"}},
     "depth_map": {
       "type": "object",
       "properties": {
         "path": {"type": ["string", "null"]},
-        "cid": {"type": ["string", "null"]}
+        "cid": {"type": ["string", "null"], "pattern": "^bafy[0-9a-zA-Z]{10,}$"}
       },
       "additionalProperties": false
     },
@@ -21,7 +21,7 @@
       "type": "object",
       "properties": {
         "path": {"type": ["string", "null"]},
-        "cid": {"type": ["string", "null"]}
+        "cid": {"type": ["string", "null"], "pattern": "^bafy[0-9a-zA-Z]{10,}$"}
       },
       "additionalProperties": false
     },
@@ -29,11 +29,28 @@
       "type": "object",
       "properties": {
         "text": {"type": "string"},
-        "bpm": {"type": ["number", "null"]}
+        "bpm": {"type": ["number", "null"], "minimum": 0}
       },
       "additionalProperties": true
     },
-    "confidence": {"type": "number"}
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "suggested_ad_anchors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "anchor_id": {"type": "string"},
+          "x": {"type": "number", "minimum": 0, "maximum": 1},
+          "y": {"type": "number", "minimum": 0, "maximum": 1},
+          "z": {"type": "number"},
+          "start_frame": {"type": "integer", "minimum": 0},
+          "end_frame": {"type": "integer", "minimum": 0},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        },
+        "required": ["anchor_id", "x", "y", "start_frame", "end_frame"],
+        "additionalProperties": true
+      }
+    }
   },
   "additionalProperties": true
 }
