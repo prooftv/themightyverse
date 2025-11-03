@@ -1,0 +1,63 @@
+name: Pin Metadata to IPFS
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'data/**'
+      - 'web/utils/metadata/**'
+  workflow_dispatch:
+
+jobs:
+  pin-metadata:
+    name: Pin Metadata to IPFS
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: web/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./web
+      run: npm ci
+    
+    - name: Build metadata manifests
+      working-directory: ./web
+      run: |
+        npm run build-metadata
+      env:
+        NODE_ENV: production
+    
+    - name: Pin to IPFS
+      working-directory: ./web
+      run: |
+        npm run pin-metadata
+      env:
+        NFT_STORAGE_KEY: ${{ secrets.NFT_STORAGE_KEY }}
+        PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
+        PINATA_SECRET_KEY: ${{ secrets.PINATA_SECRET_KEY }}
+    
+    - name: Update manifest registry
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add data/manifests/
+        git commit -m "📌 Update IPFS manifest registry [skip ci]" || exit 0
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Notify deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Metadata pinned to IPFS successfully'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      if: always()
