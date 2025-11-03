@@ -1,0 +1,26 @@
+name: Pin Notifier (scheduled)
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '30 5 * * 1'  # weekly on Monday at 05:30 UTC
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Install minimal deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+      - name: Run pin notifier
+        env:
+          # Optional: set WEBHOOK_URL or GITHUB_TOKEN in repo secrets to enable automatic notifications
+          WEBHOOK_URL: ${{ secrets.PIN_NOTIFY_WEBHOOK_URL }}
+        run: |
+          python agents-stubs/cli_pin_notify.py
