@@ -1,0 +1,14 @@
+{
+  "_metadata": {
+    "version": "1.0",
+    "created": "2025-01-27",
+    "description": "Registry mapping wallet addresses to role manifest CIDs",
+    "last_updated": "2025-01-27"
+  },
+  "_admin_wallets": [
+    "0x_ADMIN_WALLET_PLACEHOLDER"
+  ],
+  "registry": {
+    "_example_wallet": "ipfs://QmExampleRoleManifestCID"
+  }
+}
