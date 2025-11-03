@@ -1,0 +1,13 @@
+agent: contracts
+inputs:
+  - contract requirements and spec
+  - desired network (testnet/mainnet)
+outputs:
+  - Solidity contracts (CreditToken, ApprovalRegistry, MightyVerseAssets)
+  - deploy scripts and unit tests
+success_criteria:
+  - unit tests for critical flows pass locally
+  - deployment script deploys to chosen testnet
+error_modes:
+  - failing tests
+  - vulnerable dependency flagged by audit

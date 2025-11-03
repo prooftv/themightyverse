@@ -1,0 +1,14 @@
+agent: rbac
+inputs:
+  - user identity (email + wallet)
+  - role assignment requests
+outputs:
+  - access policy definitions
+  - middleware enforcement
+  - seeded admin role list
+success_criteria:
+  - middleware blocks unauthorized access to /admin/*
+  - role invites work and link wallet flow established
+error_modes:
+  - identity linking failures
+  - privilege escalation bugs

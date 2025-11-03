@@ -1,0 +1,13 @@
+agent: ci-cd
+inputs:
+  - repo changes (PRs / pushes)
+  - build configs
+outputs:
+  - CI workflows (.github/workflows/ci.yml)
+  - pin-metadata workflow
+success_criteria:
+  - PRs run lint/test/build
+  - main pushes trigger metadata pinning with secret available
+error_modes:
+  - missing secrets (NFT_STORAGE_KEY)
+  - flaky tests causing CI failures

@@ -1,0 +1,12 @@
+agent: murals
+inputs:
+  - list of metadata.json for animator versions
+outputs:
+  - mural_manifest.json (timeline + versions)
+  - deck_card_list.json (cards with timecodes)
+success_criteria:
+  - continuous timeline with no gaps/overlaps
+  - each card maps to a manifest_cid and depth maps
+error_modes:
+  - inconsistent timecodes between versions
+  - missing manifests for segments

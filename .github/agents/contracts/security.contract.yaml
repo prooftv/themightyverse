@@ -1,0 +1,12 @@
+agent: security
+inputs:
+  - contracts and frontend codebase
+outputs:
+  - security_report.md
+  - suggested fixes PRs
+success_criteria:
+  - critical vulnerabilities flagged and PRs opened
+  - dependency vulnerabilities triaged
+error_modes:
+  - false positives in static analysis
+  - missing scanner tools in environment

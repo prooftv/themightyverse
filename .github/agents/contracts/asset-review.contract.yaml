@@ -1,0 +1,15 @@
+agent: asset-review
+inputs:
+  - asset_cid: IPFS CID of uploaded asset
+  - manifest_json: optional manifest or upload metadata
+outputs:
+  - metadata_suggestion.json: suggested metadata with confidences
+  - qc_report.json: QC flags and overall confidence (0-1)
+  - suggested_ad_anchors.json: candidate ad anchor positions
+success_criteria:
+  - metadata_suggestion validated and pinned
+  - qc_report produced; confidence >= 0.8 or PR created for manual review
+error_modes:
+  - IPFS fetch failure
+  - model timeout or OOM
+  - missing required layers or corrupted media

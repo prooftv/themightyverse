@@ -1,0 +1,16 @@
+agent: mint-approval
+inputs:
+  - manifest_cid
+  - card_id
+  - credits_required OR admin_approval_signature
+outputs:
+  - mint_tx.json (prepared transaction payload)
+  - tx_receipt after submission
+success_criteria:
+  - QC:approved present on metadata
+  - credits burned or valid admin signature provided
+  - successful mint on testnet with receipt
+error_modes:
+  - insufficient credits
+  - invalid or missing admin signature
+  - on-chain tx revert

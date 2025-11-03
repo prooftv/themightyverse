@@ -1,0 +1,19 @@
+agent: metadata-gen
+inputs:
+  - metadata_suggestion.json: from asset-review
+  - depth_map_cid: optional
+  - ad_anchor_cid: optional
+  - contributors: list of wallets & IDs
+outputs:
+  - metadata.json: canonical manifest
+  - manifest_cid: IPFS CID after pin
+schema:
+  - file: metadata-schema.json
+success_criteria:
+  - manifest schema validated (ajv)
+  - sha256 checksum verified for asset
+  - manifest pinned and PR opened for admin signature
+error_modes:
+  - validation errors (missing fields)
+  - checksum mismatch
+  - pinning failure / nft.storage error

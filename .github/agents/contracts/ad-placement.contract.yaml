@@ -1,0 +1,15 @@
+agent: ad-placement
+inputs:
+  - metadata_suggestion.json
+  - asset_cid
+  - depth_map_cid
+outputs:
+  - suggested_ad_anchors.json
+  - preview_scene.json: lightweight R3F preview specification
+success_criteria:
+  - up to 6 high-confidence anchor suggestions delivered
+  - preview scene loadable in AdAnchorEditor
+error_modes:
+  - segmentation failure
+  - anchors overlapping faces/lyrics flagged
+  - preview generation errors
