@@ -1,3 +1,132 @@
+# Agents Stubs — Quick start (Codespaces automated)
+
+This folder contains the agent prototype for The Mighty Verse. The Codespace devcontainer auto-installs the minimal Python dependencies so you can start developing with zero manual setup.
+
+What the devcontainer does automatically
+- Installs Python 3.12 runtime via the official devcontainer image.
+- Runs the `postCreateCommand` to install `agents-stubs/requirements.txt`.
+- Forwards port `8000` so you can open the FastAPI server from the Codespaces browser.
+
+Quick commands (inside the Codespace)
+
+Activate the virtualenv (if you prefer to run inside one):
+```
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Install (also run automatically by the devcontainer):
+```
+make -C agents-stubs install
+```
+
+Run tests:
+```
+make -C agents-stubs test
+```
+
+Start the API server (forwarded at port 8000 in Codespaces):
+```
+make -C agents-stubs run
+# then open the forwarded port in the Codespaces Ports panel
+```
+
+Pinning and secrets
+- To auto-pin artifacts to nft.storage set the `NFT_STORAGE_KEY` environment variable in the Codespace or repository secrets.
+- Notifier: set `GITHUB_TOKEN` + `GITHUB_REPOSITORY` to allow the notifier (`cli_pin_notify.py`) to create issues; set `WEBHOOK_URL`/`WEBHOOK_PLATFORM` for webhook posting.
+
+Admin CLI examples
+```
+# list pending pins
+python agents-stubs/cli_pin_retry.py --list
+
+# notify (creates issue or posts webhook)
+python agents-stubs/cli_pin_notify.py
+```
+
+Tips
+- If you need ML extras (MiDaS, SAM, Whisper) install `agents-stubs/requirements-ml.txt` — note this can be large and may need more resources than a standard Codespace.
+- For long-running or GPU work, use a dedicated VM or specialized cloud instance.
+# Agents Stubs — Quick start (Codespaces)
+
+This folder contains the prototype agent implementations, utilities and admin CLIs used by The Mighty Verse project.
+
+This README focuses on running and developing inside GitHub Codespaces (or any Linux dev VM).
+
+Prereqs
+- Python 3.12
+- Optional: Docker (for container builds)
+
+Quick setup (Codespaces)
+
+1. Create and activate a virtualenv
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+```
+
+2. Install minimal dependencies
+
+```bash
+pip install -r agents-stubs/requirements.txt
+```
+
+Optional ML extras
+
+```bash
+# heavy; only if you need model inference locally
+pip install -r agents-stubs/requirements-ml.txt
+# or run: bash agents-stubs/scripts/setup-ml.sh
+```
+
+Common commands (from repo root)
+
+Start the FastAPI service (dev)
+
+```bash
+uvicorn agents-stubs.service.app:app --reload --port 8000
+```
+
+Run the test suite
+
+```bash
+pytest -q agents-stubs/tests
+```
+
+Run an agent via CLI
+
+```bash
+python -m agents_stubs.cli --agent asset-review --input /path/to/file.jpg --output /tmp/out.json
+```
+
+Pin retry / notifier
+
+```bash
+# list pending pins
+python agents-stubs/cli_pin_retry.py --list
+
+# retry a pending file
+python agents-stubs/cli_pin_retry.py --retry t.pending.json
+
+# run notifier (creates issue or posts webhook)
+python agents-stubs/cli_pin_notify.py
+```
+
+Devcontainer
+
+If you open this repo in Codespaces the devcontainer will install dependencies automatically (see `/.devcontainer/devcontainer.json`).
+
+Secrets & env vars
+- `NFT_STORAGE_KEY` — nft.storage API key (pinning)
+- `GITHUB_TOKEN` and `GITHUB_REPOSITORY` — allow notifier to create issues
+- `WEBHOOK_URL`, `WEBHOOK_PLATFORM` — webhook destination and platform (slack|discord)
+
+Notes
+- The ML integrations are optional and stubbed when the Python packages are not installed. The test suite uses mocks for heavy ML libraries to stay CI-friendly.
+
+If you want, I can add example inputs under `agents-stubs/testdata/` and a demo script to exercise the entire pipeline.
 Simple agent stubs for The Mighty Verse project.
 
 This package contains minimal Python CLIs for three agents:

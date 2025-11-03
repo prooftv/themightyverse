@@ -12,6 +12,8 @@ import shutil
 import subprocess
 import requests
 from typing import Optional
+import os
+import base64
 
 PENDING_DIR = "/tmp/mighty_pending_pins"
 
@@ -34,13 +36,40 @@ def gather_pending():
 
 
 def create_issue(title: str, body: str) -> bool:
-    # prefer gh CLI if available
+    # Prefer GitHub token API if available
+    gh_token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    if gh_token and repo:
+        try:
+            owner_repo = repo
+            url = f"https://api.github.com/repos/{owner_repo}/issues"
+            # allow optional labels and assignees from env
+            labels = os.environ.get("GITHUB_ISSUE_LABELS")
+            assignees = os.environ.get("GITHUB_ISSUE_ASSIGNEES")
+            payload = {"title": title, "body": body}
+            if labels:
+                payload["labels"] = [l.strip() for l in labels.split(",") if l.strip()]
+            if assignees:
+                payload["assignees"] = [a.strip() for a in assignees.split(",") if a.strip()]
+
+            headers = {
+                # GitHub accepts 'token' or 'Bearer'; use token for compatibility
+                "Authorization": f"token {gh_token}",
+                "Accept": "application/vnd.github+json",
+            }
+            resp = requests.post(url, json=payload, headers=headers, timeout=10)
+            return 200 <= resp.status_code < 300
+        except Exception:
+            return False
+
+    # fallback to gh CLI if present
     if shutil.which("gh"):
         try:
             subprocess.run(["gh", "issue", "create", "--title", title, "--body", body], check=True)
             return True
         except Exception:
             return False
+
     # otherwise, instruct the user to create manually
     return False
 
@@ -51,7 +80,15 @@ def post_webhook(url: str, text: str) -> bool:
     Returns True on 2xx response, False otherwise.
     """
     try:
-        resp = requests.post(url, json={"text": text}, timeout=10)
+        platform = os.environ.get("WEBHOOK_PLATFORM", "slack").lower()
+        if platform == "discord":
+            payload = {"content": text}
+        elif platform == "slack":
+            payload = {"text": text}
+        else:
+            # generic
+            payload = {"text": text}
+        resp = requests.post(url, json=payload, timeout=10)
         return 200 <= resp.status_code < 300
     except Exception:
         return False
