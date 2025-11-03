@@ -1,0 +1,14 @@
+agent: deck-view
+inputs:
+  - mural_manifest.json or manifest index
+  - metadata.json entries for cards
+outputs:
+  - HeroCanvas.tsx scaffold
+  - DeckViewer.tsx scaffold
+  - sample page /app/deck/[deckId].tsx
+success_criteria:
+  - components render sample deck with popOut animation
+  - anchor overlay renders from ad_anchor.json
+error_modes:
+  - missing layers or depth map: fall back to 2D rendering
+  - performance issues on mobile (should degrade gracefully)

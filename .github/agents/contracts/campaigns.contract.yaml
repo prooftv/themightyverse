@@ -1,0 +1,14 @@
+agent: campaigns
+inputs:
+  - sponsor details (brand assets, budget, dates)
+  - target murals/decks
+outputs:
+  - campaign_manifest.json
+  - campaign_payments.log
+success_criteria:
+  - anchors reserved and linked to sponsor
+  - payment recorded and anchor state transitions to active
+error_modes:
+  - double-booked anchors
+  - payment not cleared
+  - anchor conflicts with content (faces/lyrics)

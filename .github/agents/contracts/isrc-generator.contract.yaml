@@ -1,0 +1,12 @@
+agent: isrc-generator
+inputs:
+  - registrant code and sequence number
+outputs:
+  - isrc_stub (formatted string)
+  - exportable CSV for RISA
+success_criteria:
+  - ISRC stub conforms to specified format
+  - stub attached to pending manifest for admin export
+error_modes:
+  - duplicate sequence numbers
+  - invalid registrant code

@@ -1,0 +1,13 @@
+agent: admin-dashboard
+inputs:
+  - pending manifests and QC reports
+  - ad anchor previews
+outputs:
+  - admin UI pages (/admin/*)
+  - actions: approve/deny, request signature, mint on testnet
+success_criteria:
+  - admin can complete review → request signature workflow
+  - EIP-712 payloads prepared for manual signing
+error_modes:
+  - RBAC misconfiguration blocking access
+  - signature payload generation errors

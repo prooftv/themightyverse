@@ -1,0 +1,12 @@
+agent: animator-dashboard
+inputs:
+  - animator uploads (layers, depth maps, metadata)
+outputs:
+  - pending manifest created and pinned
+  - upload status updates (pending → qc_review → approved)
+success_criteria:
+  - upload validation passes (files present, fps/layers correct)
+  - manifest created and admin notified
+error_modes:
+  - invalid file formats
+  - pinning failure

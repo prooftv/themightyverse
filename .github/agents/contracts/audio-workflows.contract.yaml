@@ -1,0 +1,14 @@
+agent: audio-workflows
+inputs:
+  - audio_asset_cid(s)
+  - contributor list with SAMRO IDs
+outputs:
+  - audio_metadata.json (tempo, key, duration)
+  - isrc_stub.txt
+  - samro_link_record.json
+success_criteria:
+  - transcription produced and BPM detected
+  - ISRC stub generated and attached to pending manifest
+error_modes:
+  - audio decode/transcription failure
+  - missing contributor metadata

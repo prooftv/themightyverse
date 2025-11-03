@@ -1,0 +1,7 @@
+pytest
+fastapi
+uvicorn[standard]
+httpx
+tenacity
+nft_storage
+pytest
