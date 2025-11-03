@@ -6,8 +6,14 @@
       "extensions": [
         "ms-python.python",
         "ms-azuretools.vscode-docker",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "eg2.vscode-npm-script"
       ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
     }
   },
   "postCreateCommand": "python -m pip install --upgrade pip && pip install -r agents-stubs/requirements.txt || true",
