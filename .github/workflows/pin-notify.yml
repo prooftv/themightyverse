@@ -8,6 +8,8 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -22,5 +24,9 @@ jobs:
         env:
           # Optional: set WEBHOOK_URL or GITHUB_TOKEN in repo secrets to enable automatic notifications
           WEBHOOK_URL: ${{ secrets.PIN_NOTIFY_WEBHOOK_URL }}
+          # make sure the runtime has access to the repo and token for issue creation
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # optional: set to 'discord' when using a discord webhook
+          WEBHOOK_PLATFORM: ${{ secrets.PIN_NOTIFY_PLATFORM }}
         run: |
           python agents-stubs/cli_pin_notify.py
