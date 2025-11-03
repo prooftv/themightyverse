@@ -5,3 +5,4 @@ httpx
 tenacity
 nft_storage
 pytest
+jsonschema
