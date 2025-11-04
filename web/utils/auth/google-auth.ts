@@ -6,6 +6,7 @@
  */
 
 import { EmbeddedWallet } from '@thirdweb-dev/wallets';
+import { Ethereum } from '@thirdweb-dev/chains';
 
 interface GoogleUser {
   email: string;
@@ -21,14 +22,12 @@ class GoogleAuthService {
     try {
       // Initialize embedded wallet
       this.embeddedWallet = new EmbeddedWallet({
-        chain: 'ethereum',
+        chain: Ethereum,
         clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || '',
       });
 
       // Connect with Google
-      await this.embeddedWallet.connect({
-        strategy: 'google',
-      });
+      await this.embeddedWallet.connect();
 
       // Get wallet address
       const address = await this.embeddedWallet.getAddress();
