@@ -4,6 +4,7 @@
  */
 
 export enum Role {
+  SUPER_ADMIN = "SUPER_ADMIN",
   ADMIN = "ADMIN",
   CURATOR = "CURATOR",
   ANIMATOR = "ANIMATOR",
@@ -40,6 +41,7 @@ export interface RoleCheckResult {
 
 // Role hierarchy for permission inheritance
 export const ROLE_HIERARCHY: Record<Role, Role[]> = {
+  [Role.SUPER_ADMIN]: [Role.SUPER_ADMIN, Role.ADMIN, Role.CURATOR, Role.ANIMATOR, Role.SPONSOR, Role.VIEWER],
   [Role.ADMIN]: [Role.ADMIN, Role.CURATOR, Role.ANIMATOR, Role.SPONSOR, Role.VIEWER],
   [Role.CURATOR]: [Role.CURATOR, Role.VIEWER],
   [Role.ANIMATOR]: [Role.ANIMATOR, Role.VIEWER],
@@ -49,12 +51,12 @@ export const ROLE_HIERARCHY: Record<Role, Role[]> = {
 
 // Route permissions mapping
 export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
-  '/admin': [Role.ADMIN],
-  '/admin/rbac': [Role.ADMIN],
-  '/admin/assets': [Role.ADMIN, Role.CURATOR],
-  '/admin/campaigns': [Role.ADMIN, Role.CURATOR],
-  '/animator': [Role.ADMIN, Role.ANIMATOR],
-  '/sponsor': [Role.ADMIN, Role.SPONSOR]
+  '/admin': [Role.SUPER_ADMIN, Role.ADMIN],
+  '/admin/rbac': [Role.SUPER_ADMIN],
+  '/admin/assets': [Role.SUPER_ADMIN, Role.ADMIN, Role.CURATOR],
+  '/admin/campaigns': [Role.SUPER_ADMIN, Role.ADMIN, Role.CURATOR],
+  '/animator': [Role.SUPER_ADMIN, Role.ADMIN, Role.ANIMATOR],
+  '/sponsor': [Role.SUPER_ADMIN, Role.ADMIN, Role.SPONSOR]
 };
 
 /**
