@@ -17,9 +17,9 @@ function AuthConnectContent() {
     setError(null);
 
     try {
-      // Simulate Google OAuth + wallet creation
-      const mockWallet = `0x${Math.random().toString(16).substr(2, 40)}`;
-      await connectWallet(mockWallet);
+      // Use super admin wallet for testing
+      const superAdminWallet = '0x860Ec697167Ba865DdE1eC9e172004100613e970';
+      await connectWallet(superAdminWallet);
       router.push(redirect);
     } catch (err) {
       setError('Connection failed. Please try again.');
@@ -40,7 +40,7 @@ function AuthConnectContent() {
         <div className="text-6xl mb-6">◈</div>
         <h1 className="mv-heading-lg mb-4">Connect to The Mighty Verse</h1>
         <p className="mv-text-muted mb-8">
-          Sign in with Google to access your holographic dashboard
+          Connect as Super Admin to access all dashboards
         </p>
 
         {error && (

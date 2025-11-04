@@ -41,6 +41,22 @@ export async function createRoleManifest(
  */
 export async function getRoleManifest(wallet: string): Promise<RoleManifest | null> {
   try {
+    // Check if wallet is super admin
+    const superAdminWallet = process.env.SUPER_ADMIN_WALLET || '0x860Ec697167Ba865DdE1eC9e172004100613e970';
+    
+    if (wallet.toLowerCase() === superAdminWallet.toLowerCase()) {
+      // Return super admin manifest
+      return {
+        wallet: wallet.toLowerCase(),
+        roles: [Role.ADMIN, Role.CURATOR, Role.ANIMATOR, Role.SPONSOR],
+        issued_by: 'system',
+        issued_at: new Date().toISOString(),
+        expires_at: null,
+        admin_sig: 'system_super_admin',
+        version: '1.0'
+      };
+    }
+    
     const registry = await getRoleRegistry();
     const manifestCid = registry.registry[wallet.toLowerCase()];
     
