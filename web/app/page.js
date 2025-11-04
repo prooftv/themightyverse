@@ -8,7 +8,7 @@ export default function Home() {
         <div className="text-center mb-16 mv-fade-in">
           <h1 className="mv-heading-xl mb-6">◈ The Mighty Verse ◈</h1>
           <p className="mv-text-muted text-xl mb-8 max-w-3xl mx-auto">
-            Golden Shovel's Digital Storytelling Universe - African Heroes in the Metaverse
+            2.5D Holographic Animation Platform
           </p>
           <div className="flex justify-center space-x-4">
             <Link href="/murals">
@@ -78,9 +78,9 @@ export default function Home() {
         {/* Featured: Golden Shovel Legacy */}
         <div className="mv-card mv-holographic p-12 text-center">
           <div className="text-8xl mb-6 animate-pulse">🎵</div>
-          <h2 className="mv-heading-lg mb-4">Golden Shovel Legacy</h2>
+          <h2 className="mv-heading-lg mb-4">The Mighty Verse</h2>
           <p className="mv-text-muted text-lg mb-8">
-            Persistent digital universe hosting Golden Shovel's storytelling and community experiences
+            Experience 2.5D holographic animations and immersive storytelling
           </p>
           <Link href="/murals">
             <button className="mv-button-secondary text-lg px-8 py-4">

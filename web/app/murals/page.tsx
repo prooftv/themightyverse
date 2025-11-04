@@ -7,7 +7,7 @@ import { MuralUtils } from '../../utils/murals/assembly';
 const mockMural = {
   id: 'mural_superhero_ego',
   title: 'Super Hero Ego',
-  artist: 'The Mighty Verse',
+  artist: 'Golden Shovel',
   description: 'Complete holographic mural with multiple animator perspectives',
   totalDuration: 180,
   animatorVersions: ['futuristic', 'gritty', 'cultural'],

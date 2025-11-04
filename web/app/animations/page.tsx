@@ -1,47 +1,33 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import HolographicPlayer from '../../../components/HolographicPlayer';
 
 const mockContent = [
   {
     id: '1',
-    title: 'Golden Shovel Theme',
-    type: 'audio',
-    duration: '3:45',
-    artist: 'The Mighty Verse',
-    url: '/audio/sample.mp3'
+    title: 'Super Hero Ego',
+    type: 'animation',
+    duration: 225,
+    artist: 'Golden Shovel',
+    description: 'Holographic animation experience'
   },
   {
     id: '2', 
-    title: 'Holographic Dance',
-    type: 'animation',
-    duration: '2:30',
-    artist: 'Verse Animator'
+    title: 'Golden Shovel Theme',
+    type: 'audio',
+    duration: 180,
+    artist: 'Golden Shovel',
+    description: 'Immersive audio experience'
   }
 ];
 
 export default function Animations() {
-  const [selectedContent, setSelectedContent] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef(null);
+  const [selectedContent, setSelectedContent] = useState(mockContent[0]);
 
   const handlePlay = (content) => {
     setSelectedContent(content);
-    if (content.type === 'audio') {
-      setIsPlaying(true);
-    }
-  };
-
-  const togglePlayPause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
   };
 
   return (
@@ -62,37 +48,16 @@ export default function Animations() {
           </p>
         </div>
 
-        {/* Audio/Animation Player */}
+        {/* 2.5D Holographic Player */}
         {selectedContent && (
-          <div className="mv-card mv-holographic p-8 mb-8">
-            <div className="flex items-center space-x-6 mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400 to-green-400 flex items-center justify-center text-2xl font-bold">
-                {selectedContent.type === 'audio' ? '◆' : '◈'}
-              </div>
-              <div className="flex-1">
-                <h3 className="mv-heading-md mb-1">{selectedContent.title}</h3>
-                <p className="mv-text-accent">by {selectedContent.artist}</p>
-              </div>
-            </div>
-
-            {selectedContent.type === 'audio' && (
-              <div className="mv-player-controls">
-                <button 
-                  onClick={togglePlayPause}
-                  className="mv-player-button bg-gradient-to-br from-yellow-400 to-green-400 text-black text-xl font-bold"
-                >
-                  {isPlaying ? '◼' : '▶'}
-                </button>
-                <div className="mv-player-progress">
-                  <div className="mv-player-progress-bar" style={{ width: '30%' }} />
-                </div>
-                <span className="mv-text-muted text-sm">{selectedContent.duration}</span>
-              </div>
-            )}
-            
-            {selectedContent.url && (
-              <audio ref={audioRef} src={selectedContent.url} />
-            )}
+          <div className="mb-8">
+            <HolographicPlayer
+              title={selectedContent.title}
+              artist={selectedContent.artist}
+              duration={selectedContent.duration}
+              onPlay={() => console.log('Playing:', selectedContent.title)}
+              onPause={() => console.log('Paused:', selectedContent.title)}
+            />
           </div>
         )}
 
@@ -101,15 +66,18 @@ export default function Animations() {
           {mockContent.map((content) => (
             <div 
               key={content.id}
-              className="mv-card mv-holographic p-8 cursor-pointer group"
+              className={`mv-card mv-holographic p-8 cursor-pointer group transition-all duration-300 ${
+                selectedContent?.id === content.id ? 'ring-2 ring-yellow-400 scale-105' : 'hover:scale-102'
+              }`}
               onClick={() => handlePlay(content)}
             >
               <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-500">
                 {content.type === 'audio' ? '◆' : '◈'}
               </div>
               <h3 className="mv-heading-md mb-2">{content.title}</h3>
-              <p className="mv-text-muted mb-2">by {content.artist}</p>
-              <p className="mv-text-muted text-sm">{content.duration} • {content.type}</p>
+              <p className="mv-text-accent mb-2">by {content.artist}</p>
+              <p className="mv-text-muted text-sm mb-2">{Math.floor(content.duration / 60)}:{(content.duration % 60).toString().padStart(2, '0')} • {content.type}</p>
+              <p className="mv-text-muted text-xs">{content.description}</p>
             </div>
           ))}
         </div>
@@ -118,7 +86,7 @@ export default function Animations() {
           <div className="text-8xl mb-6 animate-pulse">◈</div>
           <h2 className="mv-heading-lg mb-4">2.5D Animation Gallery</h2>
           <p className="mv-text-muted text-lg mb-8">
-            Audio and visual content with holographic depth and cinematic effects
+            Immersive holographic experiences with cinematic depth and interactive controls
           </p>
         </div>
       </div>
