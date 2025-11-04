@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import HolographicPlayer from '../../../components/HolographicPlayer';
+import HolographicPlayer from '../../components/HolographicPlayer';
 
 const mockContent = [
   {
