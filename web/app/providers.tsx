@@ -10,6 +10,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!}
       activeChain={Ethereum}
       supportedChains={[Ethereum, Polygon]}
+      autoConnect={false}
       dAppMeta={{
         name: 'The Mighty Verse',
         description: 'Decentralized Creative Platform',
