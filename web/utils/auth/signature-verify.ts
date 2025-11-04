@@ -63,7 +63,7 @@ export async function signRoleAssignment(
   
   try {
     // Use eth_signTypedData_v4 for EIP-712 signing
-    const signature = await signer._signTypedData(
+    const signature = await (signer as any)._signTypedData(
       payload.domain,
       payload.types,
       payload.message
@@ -113,7 +113,7 @@ async function recoverSignerAddress(payload: any, signature: string): Promise<st
     // Import ethers dynamically to avoid SSR issues
     const { ethers } = await import('ethers');
     
-    const recoveredAddress = ethers.utils.verifyTypedData(
+    const recoveredAddress = (ethers.utils as any).verifyTypedData(
       payload.domain,
       payload.types,
       payload.message,

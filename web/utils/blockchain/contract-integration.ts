@@ -151,7 +151,7 @@ export class ContractIntegration {
       ]
     };
 
-    return await this.signer._signTypedData(domain, types, request);
+    return await (this.signer as any)._signTypedData(domain, types, request);
   }
 
   /**
