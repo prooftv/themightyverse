@@ -1,38 +1,22 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { ConnectWallet, useAddress } from '@thirdweb-dev/react';
 import { useRBAC } from '../rbac-provider';
 
 function AuthConnectContent() {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { connectWallet, wallet } = useRBAC();
+  const address = useAddress();
+  const { wallet } = useRBAC();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
 
-  const handleGoogleConnect = async () => {
-    setIsConnecting(true);
-    setError(null);
-
-    try {
-      // Use super admin wallet for testing
-      const superAdminWallet = '0x860Ec697167Ba865DdE1eC9e172004100613e970';
-      await connectWallet(superAdminWallet);
-      router.push(redirect);
-    } catch (err) {
-      setError('Connection failed. Please try again.');
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
   useEffect(() => {
-    if (wallet) {
+    if (address) {
       router.push(redirect);
     }
-  }, [wallet, redirect, router]);
+  }, [address, redirect, router]);
 
   return (
     <div className="mighty-verse-app min-h-screen flex items-center justify-center">
@@ -40,35 +24,26 @@ function AuthConnectContent() {
         <div className="text-6xl mb-6">◈</div>
         <h1 className="mv-heading-lg mb-4">Connect to The Mighty Verse</h1>
         <p className="mv-text-muted mb-8">
-          Connect as Super Admin to access all dashboards
+          Sign in with Google or connect your wallet
         </p>
 
-        {error && (
-          <div className="mv-status-error mb-6 p-3">
-            {error}
-          </div>
-        )}
-
-        <button
-          onClick={handleGoogleConnect}
-          disabled={isConnecting}
-          className="mv-button w-full mb-4 flex items-center justify-center space-x-3"
-        >
-          {isConnecting ? (
-            <>
-              <div className="animate-spin text-xl">◈</div>
-              <span>Connecting...</span>
-            </>
-          ) : (
-            <>
-              <span className="text-xl">◆</span>
-              <span>Continue with Google</span>
-            </>
-          )}
-        </button>
+        <div className="mb-6">
+          <ConnectWallet
+            theme="dark"
+            btnTitle="Connect Wallet"
+            modalTitle="Choose Connection Method"
+            switchToActiveChain={true}
+            modalSize="wide"
+            welcomeScreen={{
+              title: "Welcome to The Mighty Verse",
+              subtitle: "Connect your wallet to get started",
+            }}
+            className="!w-full !bg-gradient-to-r !from-purple-600 !to-blue-600 !border-0 !rounded-lg !py-3 !px-6 !text-white !font-semibold !shadow-lg hover:!shadow-xl !transition-all"
+          />
+        </div>
 
         <p className="mv-text-muted text-sm">
-          A wallet will be created automatically for blockchain features
+          Google Sign-In creates a secure wallet automatically
         </p>
       </div>
     </div>

@@ -6,6 +6,7 @@
  */
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useAddress, useConnectionStatus } from '@thirdweb-dev/react';
 import { Role, RoleManifest, RoleCheckResult, hasRolePermission } from './roles';
 import { getRoleManifest } from '../../utils/auth/role-manifest';
 
@@ -39,11 +40,15 @@ interface RBACProviderProps {
 }
 
 export function RBACProvider({ children }: RBACProviderProps) {
+  const address = useAddress();
+  const connectionStatus = useConnectionStatus();
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [wallet, setWallet] = useState<string | null>(null);
   const [manifest, setManifest] = useState<RoleManifest | null>(null);
+  
+  // Use ThirdWeb address as wallet
+  const wallet = address || null;
 
   /**
    * Load roles for connected wallet
@@ -79,17 +84,14 @@ export function RBACProvider({ children }: RBACProviderProps) {
   }, []);
 
   /**
-   * Connect wallet and load roles
+   * Connect wallet and load roles (ThirdWeb handles connection)
    */
-  const connectWallet = useCallback(async (walletAddress: string) => {
-    setWallet(walletAddress);
-    await loadRoles(walletAddress);
-    
-    // Store wallet in localStorage for persistence
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('connected_wallet', walletAddress);
+  const connectWallet = useCallback(async (walletAddress?: string) => {
+    const targetAddress = walletAddress || address;
+    if (targetAddress) {
+      await loadRoles(targetAddress);
     }
-  }, [loadRoles]);
+  }, [loadRoles, address]);
 
   /**
    * Refresh roles for current wallet
@@ -101,18 +103,12 @@ export function RBACProvider({ children }: RBACProviderProps) {
   }, [wallet, loadRoles]);
 
   /**
-   * Disconnect wallet and clear roles
+   * Disconnect wallet and clear roles (ThirdWeb handles disconnection)
    */
   const disconnect = useCallback(() => {
-    setWallet(null);
     setRoles([]);
     setManifest(null);
     setError(null);
-    
-    // Clear from localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('connected_wallet');
-    }
   }, []);
 
   /**
@@ -143,15 +139,16 @@ export function RBACProvider({ children }: RBACProviderProps) {
   const isAnimator = hasRole(Role.ANIMATOR);
   const isSponsor = hasRole(Role.SPONSOR);
 
-  // Auto-connect on mount if wallet was previously connected
+  // Auto-load roles when ThirdWeb address changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedWallet = localStorage.getItem('connected_wallet');
-      if (savedWallet && !wallet) {
-        connectWallet(savedWallet);
-      }
+    if (address && connectionStatus === 'connected') {
+      loadRoles(address);
+    } else if (!address) {
+      setRoles([]);
+      setManifest(null);
+      setError(null);
     }
-  }, [connectWallet, wallet]);
+  }, [address, connectionStatus, loadRoles]);
 
   const contextValue: RBACContextType = {
     // State
