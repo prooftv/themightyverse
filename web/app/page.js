@@ -2,8 +2,7 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="mighty-verse-app min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 py-16">
+    <div className="max-w-6xl mx-auto px-4 py-8 sm:py-16">
         {/* Hero Section */}
         <div className="text-center mb-16 mv-fade-in">
           <h1 className="mv-heading-xl mb-6">◈ The Mighty Verse ◈</h1>
@@ -25,7 +24,7 @@ export default function Home() {
         </div>
 
         {/* Main Navigation - Aligned with Playbook */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="mv-grid-responsive mb-8 sm:mb-16">
           <Link href="/murals">
             <div className="mv-card mv-holographic p-8 text-center cursor-pointer group">
               <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-500">◉</div>
@@ -88,7 +87,6 @@ export default function Home() {
             </button>
           </Link>
         </div>
-      </div>
     </div>
   );
 }

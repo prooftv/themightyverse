@@ -54,21 +54,17 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="mighty-verse-app min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mv-nav mx-4 mt-4">
-        <div className="mv-nav-brand">
-          <h1 className="mv-heading-lg">Admin Dashboard</h1>
-          <p className="mv-text-muted text-sm">The Mighty Verse Platform Administration</p>
-        </div>
+      <div className="text-center mb-8">
+        <h1 className="mv-heading-xl mb-4">⬟ Admin Dashboard ⬟</h1>
+        <p className="mv-text-muted text-lg mb-4">The Mighty Verse Platform Administration</p>
         <div className="mv-text-muted text-sm">
-          Admin: <code className="bg-white/10 px-2 py-1 rounded text-mv-text-accent">{wallet?.slice(0, 8)}...</code>
+          Admin: <code className="bg-white/10 px-2 py-1 rounded text-yellow-400">{wallet?.slice(0, 8)}...</code>
         </div>
       </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8">
           {stats.map((stat) => (
             <Link key={stat.name} href={stat.href}>
               <div className="mv-card mv-holographic p-6 cursor-pointer">
@@ -93,10 +89,10 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="mv-heading-md mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <h2 className="mv-heading-md mb-6">Quick Actions</h2>
+        <div className="mv-grid-responsive">
             {quickActions.map((action) => (
               <Link key={action.name} href={action.href}>
                 <div className="mv-card p-6 cursor-pointer group">
@@ -109,32 +105,31 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="mv-card p-6">
+      {/* Recent Activity */}
+      <div className="mv-card p-4 sm:p-6">
           <h3 className="mv-heading-md mb-6">Recent Activity</h3>
-          <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             {[
               { action: 'Asset submitted', user: '0x1234...5678', time: '2 hours ago', type: 'asset' },
               { action: 'Role assigned', user: '0x9876...5432', time: '4 hours ago', type: 'role' },
               { action: 'Campaign created', user: '0xabcd...efgh', time: '6 hours ago', type: 'campaign' },
             ].map((item, idx) => (
-              <div key={idx} className="flex items-center space-x-4">
+              <div key={idx} className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-green-400 flex items-center justify-center flex-shrink-0">
                   <span className="text-black text-sm">
                     {item.type === 'asset' ? '📄' : item.type === 'role' ? '👤' : '📢'}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white">
-                    {item.action} by <code className="mv-text-accent bg-white/10 px-2 py-1 rounded">{item.user}</code>
+                  <p className="text-white text-sm sm:text-base">
+                    {item.action} by <code className="mv-text-accent bg-white/10 px-2 py-1 rounded text-xs sm:text-sm">{item.user}</code>
                   </p>
                 </div>
-                <div className="mv-text-muted text-sm whitespace-nowrap">
+                <div className="mv-text-muted text-sm">
                   {item.time}
                 </div>
               </div>
             ))}
-          </div>
         </div>
       </div>
     </div>

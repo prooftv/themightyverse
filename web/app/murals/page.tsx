@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { MuralUtils } from '../../utils/murals/assembly';
+import Pagination from '../../components/Pagination';
 
 const mockMural = {
   id: 'mural_superhero_ego',
@@ -50,6 +51,8 @@ export default function Murals() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [currentVersion, setCurrentVersion] = useState('futuristic');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const getVersionCards = (version) => mockMural.cards.filter(card => card.animatorVersion === version);
   const getCardIcon = (card) => card.title.includes('Intro') ? '◆' : '◈';
@@ -63,26 +66,12 @@ export default function Murals() {
   };
 
   return (
-    <div className="mighty-verse-app min-h-screen">
-      <div className="mv-nav mx-4 mt-4">
-        <div className="mv-nav-brand">
-          <Link href="/" className="mv-heading-lg hover:text-yellow-400 transition-colors">
-            ◈ Murals - Card Deck System
-          </Link>
-        </div>
-        <div className="mv-nav-links">
-          <Link href="/admin" className="mv-nav-link">Admin</Link>
-          <Link href="/animator" className="mv-nav-link">Animator</Link>
-          <Link href="/hub" className="mv-nav-link">Asset Hub</Link>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center mb-12 mv-fade-in">
           <h1 className="mv-heading-xl mb-4">◈ {mockMural.title} ◈</h1>
           <p className="mv-text-muted text-lg mb-6">{mockMural.description}</p>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="mv-card p-4 text-center">
               <div className="text-2xl font-bold text-white">{mockMural.cards.length}</div>
               <div className="mv-text-muted text-sm">Cards</div>
@@ -102,12 +91,12 @@ export default function Murals() {
           </div>
         </div>
 
-        <div className="flex gap-4 mb-8 justify-center">
+        <div className="flex flex-wrap gap-2 sm:gap-4 mb-8 justify-center">
           {mockMural.animatorVersions.map((version) => (
             <button
               key={version}
               onClick={() => setCurrentVersion(version)}
-              className={`px-6 py-3 rounded-xl transition-all duration-500 flex items-center space-x-2 ${
+              className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl transition-all duration-500 flex items-center space-x-2 text-sm sm:text-base ${
                 currentVersion === version ? 'mv-button shadow-2xl transform scale-105' : 'mv-button-secondary hover:scale-105'
               }`}
             >
@@ -152,7 +141,7 @@ export default function Murals() {
 
         <div className="mb-8">
           <h3 className="mv-heading-md mb-6">Card Deck - {currentVersion.charAt(0).toUpperCase() + currentVersion.slice(1)} Version</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="mv-grid-responsive">
             {getVersionCards(currentVersion).map((card) => (
               <div 
                 key={card.id}
@@ -195,8 +184,18 @@ export default function Murals() {
               </div>
             ))}
           </div>
+          
+          {/* Pagination */}
+          <div className="mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(getVersionCards(currentVersion).length / itemsPerPage)}
+              onPageChange={setCurrentPage}
+              totalItems={getVersionCards(currentVersion).length}
+              itemsPerPage={itemsPerPage}
+            />
+          </div>
         </div>
-      </div>
     </div>
   );
 }

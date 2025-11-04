@@ -1,5 +1,7 @@
 import './globals.css'
 import { Providers } from './providers'
+import Navigation from '../components/Navigation'
+import Footer from '../components/Footer'
 
 export const metadata = {
   title: 'The Mighty Verse - Holographic 2.5D Blockchain Ecosystem',
@@ -18,7 +20,11 @@ export default function RootLayout({
       </head>
       <body className="mighty-verse-app">
         <Providers>
-          {children}
+          <Navigation />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
         </Providers>
       </body>
     </html>

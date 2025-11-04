@@ -84,21 +84,17 @@ export default function AnimatorDashboard() {
   };
 
   return (
-    <div className="mighty-verse-app min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mv-nav mx-4 mt-4">
-        <div className="mv-nav-brand">
-          <h1 className="mv-heading-lg">◈ Animator Portal</h1>
-          <p className="mv-text-muted text-sm">Upload and manage your 2.5D holographic animations</p>
-        </div>
+      <div className="text-center mb-8">
+        <h1 className="mv-heading-xl mb-4">◈ Animator Portal ◈</h1>
+        <p className="mv-text-muted text-lg mb-4">Upload and manage your 2.5D holographic animations</p>
         <div className="mv-text-muted text-sm">
           Animator: <code className="bg-white/10 px-2 py-1 rounded text-yellow-400">{wallet?.slice(0, 8)}...</code>
         </div>
       </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-4 mb-8">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <div className="mv-card mv-holographic p-6">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-green-400 rounded-xl flex items-center justify-center">
@@ -148,10 +144,10 @@ export default function AnimatorDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="mv-heading-md mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <h2 className="mv-heading-md mb-6">Quick Actions</h2>
+        <div className="mv-grid-responsive">
             <Link href="/animator/upload">
               <div className="mv-card mv-holographic p-8 cursor-pointer group text-center border-2 border-dashed border-white/20 hover:border-yellow-400/50">
                 <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-500">◈</div>
@@ -176,8 +172,8 @@ export default function AnimatorDashboard() {
           </div>
         </div>
 
-        {/* Recent Submissions */}
-        <div className="mv-card p-6">
+      {/* Recent Submissions */}
+      <div className="mv-card p-4 sm:p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="mv-heading-md">Recent Submissions</h3>
             <Link href="/animator/submissions" className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors">
@@ -185,20 +181,20 @@ export default function AnimatorDashboard() {
             </Link>
           </div>
             
-          <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             {submissions.slice(0, 3).map((submission) => (
-              <div key={submission.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 rounded-xl flex items-center justify-center">
+              <div key={submission.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 sm:space-y-0">
+                <div className="flex items-center space-x-4 flex-1">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 rounded-xl flex items-center justify-center flex-shrink-0">
                     <span className="text-black text-lg font-bold">◈</span>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-white font-medium">{submission.title}</p>
-                    <div className="flex items-center mt-1 text-sm mv-text-muted">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium truncate">{submission.title}</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center mt-1 text-sm mv-text-muted space-y-1 sm:space-y-0">
                       <span>{new Date(submission.submittedAt).toLocaleDateString()}</span>
                       {submission.confidence && (
                         <>
-                          <span className="mx-2">•</span>
+                          <span className="hidden sm:inline mx-2">•</span>
                           <span className={`font-medium ${submission.confidence >= 0.8 ? 'text-green-400' : 'text-yellow-400'}`}>
                             {Math.round(submission.confidence * 100)}% confidence
                           </span>
@@ -219,9 +215,9 @@ export default function AnimatorDashboard() {
                 </span>
               </div>
             ))}
-          </div>
+        </div>
 
-          {submissions.length === 0 && (
+        {submissions.length === 0 && (
             <div className="text-center py-12">
               <div className="text-8xl mb-6">◈</div>
               <h3 className="mv-heading-md mb-2">No submissions yet</h3>
@@ -232,8 +228,7 @@ export default function AnimatorDashboard() {
                 </button>
               </Link>
             </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

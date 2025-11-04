@@ -152,15 +152,17 @@ export default function HolographicPlayer({
 
       {/* Controls */}
       <div className="space-y-4">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-green-400 flex items-center justify-center text-xl font-bold text-black">
-            ◈
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+          <div className="flex items-center space-x-4 flex-1">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-green-400 flex items-center justify-center text-xl font-bold text-black flex-shrink-0">
+              ◈
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="mv-heading-sm truncate">{title}</h3>
+              <p className="mv-text-accent text-sm truncate">by {artist}</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <h3 className="mv-heading-md">{title}</h3>
-            <p className="mv-text-accent text-sm">by {artist}</p>
-          </div>
-          <div className="text-sm mv-text-muted">
+          <div className="text-sm mv-text-muted text-center sm:text-right">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
         </div>
@@ -177,19 +179,19 @@ export default function HolographicPlayer({
         </div>
 
         {/* Buttons */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             <button 
               onClick={togglePlay}
-              className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-green-400 text-black text-xl font-bold hover:scale-110 transition-transform"
+              className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-green-400 text-black text-xl font-bold hover:scale-110 transition-transform mv-touch-target"
             >
               {isPlaying ? '⏸' : '▶'}
             </button>
-            <button className="w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">⏮</button>
-            <button className="w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">⏭</button>
+            <button className="w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors mv-touch-target">⏮</button>
+            <button className="w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors mv-touch-target">⏭</button>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
             <div className="flex items-center space-x-2">
               <span className="text-xs mv-text-muted">2.5D</span>
               <input
@@ -199,7 +201,7 @@ export default function HolographicPlayer({
                 step="0.1"
                 value={holographicIntensity}
                 onChange={(e) => setHolographicIntensity(parseFloat(e.target.value))}
-                className="w-16"
+                className="w-16 sm:w-20"
               />
             </div>
             <div className="flex items-center space-x-2">
@@ -211,7 +213,7 @@ export default function HolographicPlayer({
                 step="0.1"
                 value={volume}
                 onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="w-16"
+                className="w-16 sm:w-20"
               />
             </div>
           </div>

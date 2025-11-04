@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import HolographicPlayer from '../../components/HolographicPlayer';
+import Breadcrumb from '../../components/Breadcrumb';
 
 const mockContent = [
   {
@@ -31,16 +32,10 @@ export default function Animations() {
   };
 
   return (
-    <div className="mighty-verse-app min-h-screen">
-      <div className="mv-nav mx-4 mt-4">
-        <div className="mv-nav-brand">
-          <Link href="/" className="mv-heading-lg hover:mv-text-accent transition-colors">
-            ◆ The Mighty Verse
-          </Link>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-4 py-16">
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <Breadcrumb items={[
+        { label: 'Animations', icon: '◈' }
+      ]} />
         <div className="text-center mb-16 mv-fade-in">
           <h1 className="mv-heading-xl mb-6">◈ Animations ◈</h1>
           <p className="mv-text-muted text-xl mb-8">
@@ -62,7 +57,7 @@ export default function Animations() {
         )}
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div className="mv-grid-responsive mb-8 sm:mb-16">
           {mockContent.map((content) => (
             <div 
               key={content.id}
@@ -89,7 +84,6 @@ export default function Animations() {
             Immersive holographic experiences with cinematic depth and interactive controls
           </p>
         </div>
-      </div>
     </div>
   );
 }
