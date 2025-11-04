@@ -7,7 +7,6 @@ import { useRBAC } from '../rbac-provider';
 
 function AuthConnectContent() {
   const address = useAddress();
-  const { wallet } = useRBAC();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
@@ -24,26 +23,17 @@ function AuthConnectContent() {
         <div className="text-6xl mb-6">◈</div>
         <h1 className="mv-heading-lg mb-4">Connect to The Mighty Verse</h1>
         <p className="mv-text-muted mb-8">
-          Sign in with Google or connect your wallet
+          Choose your preferred connection method
         </p>
 
-        <div className="mb-6">
-          <ConnectWallet
-            theme="dark"
-            btnTitle="Connect Wallet"
-            modalTitle="Choose Connection Method"
-            switchToActiveChain={true}
-            modalSize="wide"
-            welcomeScreen={{
-              title: "Welcome to The Mighty Verse",
-              subtitle: "Connect your wallet to get started",
-            }}
-            className="!w-full !bg-gradient-to-r !from-purple-600 !to-blue-600 !border-0 !rounded-lg !py-3 !px-6 !text-white !font-semibold !shadow-lg hover:!shadow-xl !transition-all"
-          />
-        </div>
+        <ConnectWallet
+          theme="dark"
+          btnTitle="Connect Wallet"
+          className="!w-full !bg-gradient-to-r !from-purple-600 !to-blue-600 !border-0 !rounded-lg !py-3 !px-6 !text-white !font-semibold"
+        />
 
-        <p className="mv-text-muted text-sm">
-          Google Sign-In creates a secure wallet automatically
+        <p className="mv-text-muted text-sm mt-4">
+          Multiple wallet options available
         </p>
       </div>
     </div>

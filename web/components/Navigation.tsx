@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ConnectWallet } from '@thirdweb-dev/react';
 import { useRBAC } from '../app/auth/rbac-provider';
 
 export default function Navigation() {
@@ -76,12 +77,11 @@ export default function Navigation() {
 
               {/* Connect Button */}
               {!wallet && (
-                <Link href="/auth/connect">
-                  <button className="mv-button text-sm px-4 py-2">
-                    <span className="hidden sm:inline">Connect</span>
-                    <span className="sm:hidden">◈</span>
-                  </button>
-                </Link>
+                <ConnectWallet
+                  theme="dark"
+                  btnTitle="Connect"
+                  className="!bg-gradient-to-r !from-purple-600 !to-blue-600 !border-0 !rounded-lg !py-2 !px-4 !text-white !font-medium !text-sm"
+                />
               )}
 
               {/* Mobile Menu Toggle */}
