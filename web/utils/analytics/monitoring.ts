@@ -88,8 +88,8 @@ export class AnalyticsService {
     const memory = (performance as any).memory;
 
     return {
-      pageLoadTime: navigation ? navigation.loadEventEnd - navigation.navigationStart : 0,
-      renderTime: navigation ? navigation.domContentLoadedEventEnd - navigation.navigationStart : 0,
+      pageLoadTime: navigation ? navigation.loadEventEnd - navigation.startTime : 0,
+      renderTime: navigation ? navigation.domContentLoadedEventEnd - navigation.startTime : 0,
       interactionDelay: 0,
       memoryUsage: memory ? memory.usedJSHeapSize / 1024 / 1024 : 0,
       networkLatency: navigation ? navigation.responseStart - navigation.requestStart : 0,
