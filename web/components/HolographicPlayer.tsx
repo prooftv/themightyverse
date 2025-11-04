@@ -21,7 +21,7 @@ export default function HolographicPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.8);
   const [holographicIntensity, setHolographicIntensity] = useState(0.7);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     if (isPlaying) {
