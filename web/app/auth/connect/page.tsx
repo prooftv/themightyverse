@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAddress } from '@thirdweb-dev/react';
 import { useRBAC } from '../rbac-provider';
 import GoogleSignIn from '../../../components/GoogleSignIn';
-import { GoogleUser } from '../../../utils/auth/google-auth';
 
 function AuthConnectContent() {
   const address = useAddress();
@@ -20,15 +19,6 @@ function AuthConnectContent() {
       router.push(redirect);
     }
   }, [address, wallet, redirect, router]);
-
-  const handleGoogleSuccess = (user: GoogleUser) => {
-    console.log('Google sign-in successful:', user);
-    router.push(redirect);
-  };
-
-  const handleGoogleError = (errorMessage: string) => {
-    setError(errorMessage);
-  };
 
   const handleSuperAdminConnect = async () => {
     try {
@@ -46,7 +36,7 @@ function AuthConnectContent() {
         <div className="text-6xl mb-6">◈</div>
         <h1 className="mv-heading-lg mb-4">Connect to The Mighty Verse</h1>
         <p className="mv-text-muted mb-8">
-          Sign in to access your dashboard
+          Choose your connection method
         </p>
 
         {error && (
@@ -55,12 +45,8 @@ function AuthConnectContent() {
           </div>
         )}
 
-        {/* Google Sign-In */}
-        <GoogleSignIn
-          onSuccess={handleGoogleSuccess}
-          onError={handleGoogleError}
-          className="mv-button w-full mb-4 flex items-center justify-center space-x-3"
-        />
+        {/* ThirdWeb Connect Wallet */}
+        <GoogleSignIn className="!w-full !bg-gradient-to-r !from-purple-600 !to-blue-600 !border-0 !rounded-lg !py-3 !px-6 !text-white !font-semibold !mb-4" />
 
         {/* Super Admin Access */}
         <button
@@ -72,7 +58,7 @@ function AuthConnectContent() {
         </button>
 
         <p className="mv-text-muted text-sm">
-          Google Sign-In creates a secure wallet automatically
+          Multiple wallet options available
         </p>
       </div>
     </div>
