@@ -166,7 +166,7 @@ export class HealthMonitor {
   async runHealthChecks(): Promise<Record<string, { healthy: boolean; error?: string }>> {
     const results: Record<string, { healthy: boolean; error?: string }> = {};
 
-    for (const [name, check] of this.healthChecks) {
+    for (const [name, check] of Array.from(this.healthChecks)) {
       try {
         const healthy = await check();
         results[name] = { healthy };
@@ -181,7 +181,7 @@ export class HealthMonitor {
   }
 
   isPlatformHealthy(): boolean {
-    for (const [, data] of this.status) {
+    for (const [, data] of Array.from(this.status)) {
       if (!data.healthy) return false;
     }
     return true;
