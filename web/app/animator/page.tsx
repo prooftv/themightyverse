@@ -219,7 +219,7 @@ export default function AnimatorDashboard() {
                 </span>
               </div>
             ))}
-            </div>
+          </div>
 
           {submissions.length === 0 && (
             <div className="text-center py-12">
@@ -233,7 +233,6 @@ export default function AnimatorDashboard() {
               </Link>
             </div>
           )}
-          </div>
         </div>
       </div>
     </div>
