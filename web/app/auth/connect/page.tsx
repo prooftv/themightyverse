@@ -4,7 +4,7 @@ import React, { useEffect, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAddress } from '@thirdweb-dev/react';
 import { useRBAC } from '../rbac-provider';
-import GoogleSignIn from '../../../components/GoogleSignIn';
+import EmailSignIn from '../../../components/GoogleSignIn';
 
 function AuthConnectContent() {
   const address = useAddress();
@@ -45,8 +45,14 @@ function AuthConnectContent() {
           </div>
         )}
 
-        {/* ThirdWeb Connect Wallet */}
-        <GoogleSignIn className="!w-full !bg-gradient-to-r !from-purple-600 !to-blue-600 !border-0 !rounded-lg !py-3 !px-6 !text-white !font-semibold !mb-4" />
+        {/* Email Sign-In */}
+        <EmailSignIn 
+          className="mb-4"
+          onSuccess={(address) => {
+            console.log('Email sign-in successful:', address);
+            router.push(redirect);
+          }}
+        />
 
         {/* Super Admin Access */}
         <button

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRBAC } from '../app/auth/rbac-provider';
-import GoogleSignIn from './GoogleSignIn';
+import EmailSignIn from './GoogleSignIn';
 
 export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -77,10 +77,12 @@ export default function Navigation() {
 
               {/* Connect Button */}
               {!wallet && (
-                <GoogleSignIn className="!bg-gradient-to-r !from-purple-600 !to-blue-600 !border-0 !rounded-lg !py-2 !px-4 !text-white !font-medium !text-sm">
-                  <span className="hidden sm:inline">Connect</span>
-                  <span className="sm:hidden">◈</span>
-                </GoogleSignIn>
+                <Link href="/auth/connect">
+                  <button className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 rounded-lg py-2 px-4 text-white font-medium text-sm">
+                    <span className="hidden sm:inline">Connect</span>
+                    <span className="sm:hidden">◈</span>
+                  </button>
+                </Link>
               )}
 
               {/* Mobile Menu Toggle */}
