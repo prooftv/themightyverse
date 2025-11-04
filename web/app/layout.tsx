@@ -1,5 +1,5 @@
 import './globals.css'
-import { RBACProvider } from './auth/rbac-provider'
+import { Providers } from './providers'
 
 export const metadata = {
   title: 'The Mighty Verse - Holographic 2.5D Blockchain Ecosystem',
@@ -17,9 +17,9 @@ export default function RootLayout({
         <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
       </head>
       <body className="mighty-verse-app">
-        <RBACProvider>
+        <Providers>
           {children}
-        </RBACProvider>
+        </Providers>
       </body>
     </html>
   )
