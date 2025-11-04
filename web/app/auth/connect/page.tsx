@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRBAC } from '../rbac-provider';
 
-export default function AuthConnect() {
+function AuthConnectContent() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { connectWallet, wallet } = useRBAC();
@@ -72,5 +72,20 @@ export default function AuthConnect() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function AuthConnect() {
+  return (
+    <Suspense fallback={
+      <div className="mighty-verse-app min-h-screen flex items-center justify-center">
+        <div className="mv-card mv-holographic p-12 max-w-md w-full text-center">
+          <div className="animate-spin text-6xl mb-6">◈</div>
+          <h1 className="mv-heading-lg mb-4">Loading...</h1>
+        </div>
+      </div>
+    }>
+      <AuthConnectContent />
+    </Suspense>
   );
 }
