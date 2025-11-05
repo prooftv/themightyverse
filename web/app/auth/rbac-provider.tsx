@@ -52,14 +52,28 @@ export function RBACProvider({ children }: RBACProviderProps) {
   const [sessionWallet, setSessionWallet] = useState<string | null>(null);
   const wallet = sessionWallet || address || null;
 
-  // Load session on mount
+  // Load session on mount and persist
   useEffect(() => {
     const session = getSession();
     if (session) {
       setSessionWallet(session.wallet);
       setRoles(session.roles);
+      setLoading(false);
+    } else {
+      setLoading(false);
     }
   }, []);
+
+  // Persist session when roles change
+  useEffect(() => {
+    if (wallet && roles.length > 0) {
+      const session = { wallet, roles };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('mv-auth-session', JSON.stringify(session));
+        document.cookie = `rbac-session=${JSON.stringify(session)}; path=/; max-age=86400`;
+      }
+    }
+  }, [wallet, roles]);
 
   /**
    * Load roles for connected wallet

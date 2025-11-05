@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import MediaRenderer from '../../components/media/media-renderer';
+import HolographicVideoPlayer from '../../components/HolographicVideoPlayer';
 import Breadcrumb from '../../components/Breadcrumb';
 import { dataManager } from '../../utils/storage/data-store';
 import Pagination from '../../components/shared/pagination';
@@ -98,13 +99,14 @@ export default function Animations() {
                 </div>
               </div>
               
-              {/* Large Video Player */}
-              <MediaRenderer
+              {/* 2.5D Holographic Video Player */}
+              <HolographicVideoPlayer
                 fileCid={selectedAsset.fileCid}
                 thumbnailCid={selectedAsset.thumbnailCid}
                 mimeType={selectedAsset.mimeType}
                 fileName={selectedAsset.fileName}
-                className="w-full h-96 md:h-[500px] lg:h-[600px] object-contain rounded-lg bg-black"
+                title={selectedAsset.name}
+                className="w-full h-96 md:h-[500px] lg:h-[600px]"
               />
             </div>
           </div>

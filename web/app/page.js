@@ -9,15 +9,20 @@ export default function Home() {
           <p className="mv-text-muted text-xl mb-8 max-w-3xl mx-auto">
             2.5D Holographic Animation Platform
           </p>
-          <div className="flex justify-center space-x-4">
-            <Link href="/murals">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/animations">
               <button className="mv-button text-lg px-8 py-4">
-                ◆ Enter The Verse ◆
+                ◈ Watch Animations ◈
+              </button>
+            </Link>
+            <Link href="/murals">
+              <button className="mv-button-secondary text-lg px-8 py-4">
+                ◉ Explore Murals ◉
               </button>
             </Link>
             <Link href="/auth/connect">
               <button className="mv-button-secondary text-lg px-8 py-4">
-                ◈ Verse Access ◈
+                ◆ Creator Access ◆
               </button>
             </Link>
           </div>
