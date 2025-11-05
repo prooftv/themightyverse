@@ -5,9 +5,10 @@
  * Central hub for content management and platform administration
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRBAC } from '../auth/rbac-provider';
 import Link from 'next/link';
+import { dataManager } from '../../utils/storage/data-store';
 
 interface DashboardStat {
   name: string;
@@ -17,12 +18,7 @@ interface DashboardStat {
   href: string;
 }
 
-const stats: DashboardStat[] = [
-  { name: 'Pending Assets', value: '12', change: '+4', changeType: 'increase', href: '/admin/assets' },
-  { name: 'Active Campaigns', value: '3', change: '+1', changeType: 'increase', href: '/admin/campaigns' },
-  { name: 'Mint Queue', value: '8', change: '-2', changeType: 'decrease', href: '/admin/mint-queue' },
-  { name: 'Total Users', value: '247', change: '+12', changeType: 'increase', href: '/admin/rbac' },
-];
+
 
 const quickActions = [
   { name: 'Upload Media', href: '/admin/upload', icon: '⬆️', description: 'Upload audio, video, and visual assets' },
@@ -36,8 +32,46 @@ const quickActions = [
 
 export default function AdminDashboard() {
   const { isAdmin, loading, wallet } = useRBAC();
+  const [stats, setStats] = useState<DashboardStat[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const [assets, campaigns, users] = await Promise.all([
+        dataManager.getData('assets'),
+        dataManager.getData('campaigns'), 
+        dataManager.getData('users')
+      ]);
+
+      const pendingAssets = assets.filter(a => a.status === 'pending').length;
+      const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
+      const mintQueue = assets.filter(a => a.status === 'approved' && !a.minted).length;
+
+      setStats([
+        { name: 'Pending Assets', value: pendingAssets.toString(), change: '', changeType: 'increase', href: '/admin/assets' },
+        { name: 'Active Campaigns', value: activeCampaigns.toString(), change: '', changeType: 'increase', href: '/admin/campaigns' },
+        { name: 'Mint Queue', value: mintQueue.toString(), change: '', changeType: 'decrease', href: '/admin/mint-queue' },
+        { name: 'Total Users', value: users.length.toString(), change: '', changeType: 'increase', href: '/admin/rbac' },
+      ]);
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+      // Fallback to empty stats
+      setStats([
+        { name: 'Pending Assets', value: '0', change: '', changeType: 'increase', href: '/admin/assets' },
+        { name: 'Active Campaigns', value: '0', change: '', changeType: 'increase', href: '/admin/campaigns' },
+        { name: 'Mint Queue', value: '0', change: '', changeType: 'decrease', href: '/admin/mint-queue' },
+        { name: 'Total Users', value: '0', change: '', changeType: 'increase', href: '/admin/rbac' },
+      ]);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  if (loading || dataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -79,11 +113,13 @@ export default function AdminDashboard() {
                     <div className="mv-text-muted text-sm mb-1">{stat.name}</div>
                     <div className="flex items-baseline space-x-2">
                       <div className="text-2xl font-bold text-white">{stat.value}</div>
-                      <div className={`text-sm font-semibold ${
-                        stat.changeType === 'increase' ? 'mv-text-energy' : 'text-red-400'
-                      }`}>
-                        {stat.change}
-                      </div>
+                      {stat.change && (
+                        <div className={`text-sm font-semibold ${
+                          stat.changeType === 'increase' ? 'mv-text-energy' : 'text-red-400'
+                        }`}>
+                          {stat.change}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -1,35 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config) => {
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      net: false,
-      tls: false,
-    };
-    return config;
+  experimental: {
+    serverComponentsExternalPackages: ['@thirdweb-dev/sdk']
   },
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
-          },
-        ],
-      },
-    ];
+  api: {
+    bodyParser: {
+      sizeLimit: '100mb',
+    },
   },
-};
+  serverRuntimeConfig: {
+    maxDuration: 60,
+  },
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig

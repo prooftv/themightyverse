@@ -56,6 +56,13 @@ export default function AdminUploadPage() {
   };
 
   const handleFileSelect = async (file: File) => {
+    // Check file size (50MB limit)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      alert(`File too large. Maximum size is 50MB, got ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+      return;
+    }
+    
     setForm(prev => ({ ...prev, file }));
     
     // Auto-generate ISRC and extract metadata for audio/video
@@ -420,7 +427,7 @@ export default function AdminUploadPage() {
                     {form.file ? form.file.name : 'Click to upload file'}
                   </div>
                   <div className="text-sm mv-text-muted">
-                    {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 100MB'}
+                    {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 50MB'}
                   </div>
                 </label>
               </div>

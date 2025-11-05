@@ -10,6 +10,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
+    // Check file size (50MB limit)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      return NextResponse.json({ 
+        error: `File too large. Maximum size is 50MB, got ${(file.size / 1024 / 1024).toFixed(1)}MB` 
+      }, { status: 413 });
+    }
+
     const pinataJWT = process.env.PINATA_JWT;
     if (!pinataJWT) {
       return NextResponse.json({ error: 'PINATA_JWT not configured' }, { status: 500 });

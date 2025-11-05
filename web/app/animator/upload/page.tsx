@@ -292,7 +292,17 @@ export default function UploadPage() {
               <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
                 <input
                   type="file"
-                  onChange={(e) => setForm(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const maxSize = 50 * 1024 * 1024; // 50MB
+                      if (file.size > maxSize) {
+                        alert(`File too large. Maximum size is 50MB, got ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+                        return;
+                      }
+                      setForm(prev => ({ ...prev, file }));
+                    }
+                  }}
                   accept=".mp4,.mov,.avi,.webm,.gif,.mp3,.wav,.flac,.ogg,.jpg,.jpeg,.png,.webp,.svg,.fbx,.obj,.glb,.gltf,.blend"
                   className="hidden"
                   id="main-file"
@@ -304,7 +314,7 @@ export default function UploadPage() {
                     {form.file ? form.file.name : 'Click to upload main file'}
                   </div>
                   <div className="text-sm mv-text-muted">
-                    {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 100MB'}
+                    {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 50MB'}
                   </div>
                 </label>
               </div>
