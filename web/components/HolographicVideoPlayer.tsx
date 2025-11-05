@@ -36,6 +36,8 @@ export default function HolographicVideoPlayer({
   const debug = process.env.NEXT_PUBLIC_DEBUG === 'true';
   const [inView, setInView] = useState(false);
   const [selectedCid, setSelectedCid] = useState<string | undefined>(fileCid);
+  const [manualRendition, setManualRendition] = useState<string | undefined>();
+  const [showRenditionToggle, setShowRenditionToggle] = useState(false);
   
   const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
   
@@ -71,6 +73,11 @@ export default function HolographicVideoPlayer({
 
   // Select the best CID based on available renditions and screen size
   useEffect(() => {
+    if (manualRendition) {
+      setSelectedCid(manualRendition);
+      return;
+    }
+
     if (renditions && renditions.length > 0) {
       // pick smallest by width when on small screen, otherwise pick highest width
       const numericRenditions = renditions
@@ -95,7 +102,7 @@ export default function HolographicVideoPlayer({
     } else {
       setSelectedCid(fileCid);
     }
-  }, [renditions, isSmallScreen, fileCid]);
+  }, [renditions, isSmallScreen, fileCid, manualRendition]);
 
   // Lazy-load: only attach source when player is in viewport
   useEffect(() => {
@@ -219,6 +226,41 @@ export default function HolographicVideoPlayer({
             />
           ))}
         </div>
+
+        {/* Rendition Toggle */}
+        {renditions && renditions.length > 0 && (
+          <div 
+            className="absolute bottom-14 right-0 z-20 bg-black/80 rounded-l-lg overflow-hidden transition-all"
+            onMouseEnter={() => setShowRenditionToggle(true)}
+            onMouseLeave={() => setShowRenditionToggle(false)}
+          >
+            <button 
+              onClick={() => setShowRenditionToggle(!showRenditionToggle)}
+              className="px-2 py-1 text-xs text-white/80 hover:text-white"
+            >
+              {showRenditionToggle ? '◀ Quality' : 'Quality ▶'}
+            </button>
+            {showRenditionToggle && (
+              <div className="px-2 py-1">
+                <button
+                  onClick={() => setManualRendition(undefined)}
+                  className={`block w-full text-left px-2 py-1 text-xs rounded ${!manualRendition ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                >
+                  Auto
+                </button>
+                {renditions.map((r, i) => (
+                  <button
+                    key={r.cid}
+                    onClick={() => setManualRendition(r.cid)}
+                    className={`block w-full text-left px-2 py-1 text-xs rounded ${manualRendition === r.cid ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                  >
+                    {r.label || `${r.width}x${r.height || '?'}`}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Main Video */}
         <video
