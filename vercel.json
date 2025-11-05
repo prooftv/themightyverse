@@ -1,20 +1,14 @@
 {
+  "framework": "nextjs",
   "buildCommand": "cd web && npm run build",
   "outputDirectory": "web/.next",
-  "framework": null,
   "installCommand": "cd web && npm install",
   "functions": {
-    "web/app/api/agents/**/*.js": {
-      "runtime": "nodejs18.x",
-      "maxDuration": 30
+    "web/app/api/**/*.js": {
+      "runtime": "nodejs18.x"
     }
   },
-  "env": {
-    "NEXT_PUBLIC_THIRDWEB_CLIENT_ID": "@next_public_thirdweb_client_id",
-    "NEXT_PUBLIC_SUPER_ADMIN_WALLET": "@next_public_super_admin_wallet",
-    "PINATA_JWT": "@pinata_jwt",
-    "NEXT_PUBLIC_AGENT_API_URL": "https://themightyverse.vercel.app/api"
-  },
+
   "headers": [
     {
       "source": "/api/(.*)",
