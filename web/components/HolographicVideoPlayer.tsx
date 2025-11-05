@@ -24,7 +24,8 @@ export default function HolographicVideoPlayer({
   mimeType, 
   fileName,
   title,
-  className = "w-full aspect-video max-h-[60vh] min-h-[220px]"
+  className = "w-full aspect-video max-h-[60vh] min-h-[220px]",
+  renditions
 }: HolographicVideoPlayerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
