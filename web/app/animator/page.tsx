@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRBAC } from '../auth/rbac-provider';
 import Link from 'next/link';
 import { dataManager } from '../../utils/storage/data-store';
+import NavigationHeader from '../../components/shared/navigation-header';
+import Pagination from '../../components/shared/pagination';
 
 interface Asset {
   id: string;
@@ -19,6 +21,12 @@ export default function AnimatorDashboard() {
   const { isAnimator, isAdmin, wallet } = useRBAC();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(8);
+  
+  const totalPages = Math.ceil(assets.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedAssets = assets.slice(startIndex, startIndex + itemsPerPage);
 
   useEffect(() => {
     loadAssets();
@@ -110,13 +118,15 @@ export default function AnimatorDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="mv-heading-xl mb-4">◯ Animator Dashboard ◯</h1>
-        <p className="mv-text-muted text-lg">Create and manage your holographic assets</p>
-        <div className="mv-text-muted text-sm mt-2">
-          Wallet: <code className="bg-white/10 px-2 py-1 rounded text-yellow-400">{wallet?.slice(0, 8)}...</code>
-        </div>
-      </div>
+      <NavigationHeader 
+        title="◯ Animator Dashboard ◯"
+        subtitle="Create and manage your holographic assets"
+        actions={
+          <div className="text-sm mv-text-muted">
+            Wallet: <code className="bg-white/10 px-2 py-1 rounded text-yellow-400">{wallet?.slice(0, 8)}...</code>
+          </div>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -238,7 +248,7 @@ export default function AnimatorDashboard() {
           </div>
         ) : (
           <div className="space-y-4">
-            {assets.map((asset) => (
+            {paginatedAssets.map((asset) => (
               <div key={asset.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
                   <div className="flex items-center space-x-4">
@@ -296,6 +306,14 @@ export default function AnimatorDashboard() {
               </div>
             ))}
           </div>
+          
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            totalItems={assets.length}
+          />
         )}
       </div>
     </div>

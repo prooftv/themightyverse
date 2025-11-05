@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useRBAC } from '../../auth/rbac-provider';
 import { dataManager } from '../../../utils/storage/data-store';
 import { ipfsClient } from '../../../utils/storage/ipfs-client';
+import NavigationHeader from '../../../components/shared/navigation-header';
+import UploadSuccess from '../../../components/shared/upload-success';
 
 interface UploadForm {
   name: string;
@@ -38,6 +40,8 @@ export default function UploadPage() {
   const [tagInput, setTagInput] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadedAsset, setUploadedAsset] = useState<{name: string; type: string} | null>(null);
 
   const categories = {
     animation: ['Character Animation', 'Environment', 'Effects', 'UI Animation'],
@@ -113,18 +117,8 @@ export default function UploadPage() {
       });
       
       setUploadProgress(100);
-      
-      // Reset form
-      setForm({
-        name: '',
-        description: '',
-        type: 'animation',
-        category: '',
-        tags: [],
-        file: null,
-        thumbnail: null,
-        metadata: { format: '' }
-      });
+      setUploadedAsset({ name: form.name, type: form.type });
+      setUploadSuccess(true);
     } catch (error) {
       console.error('Upload failed:', error);
     } finally {
@@ -145,10 +139,33 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="mv-heading-xl mb-4">📤 Upload Asset</h1>
-        <p className="mv-text-muted text-lg">Upload your holographic creations to The Mighty Verse</p>
-      </div>
+      <NavigationHeader 
+        title="📤 Upload Asset"
+        subtitle="Upload your holographic creations to The Mighty Verse"
+        backLink="/animator"
+      />
+      
+      {uploadSuccess && uploadedAsset ? (
+        <UploadSuccess
+          assetName={uploadedAsset.name}
+          assetType={uploadedAsset.type}
+          isAdmin={false}
+          onUploadAnother={() => {
+            setUploadSuccess(false);
+            setUploadedAsset(null);
+            setForm({
+              name: '',
+              description: '',
+              type: 'animation',
+              category: '',
+              tags: [],
+              file: null,
+              thumbnail: null,
+              metadata: { format: '' }
+            });
+          }}
+        />
+      ) : (
 
       <form onSubmit={handleSubmit} className="mv-card p-6 space-y-6">
         {/* Basic Information */}
@@ -406,6 +423,7 @@ export default function UploadPage() {
           </button>
         </div>
       </form>
+      )}
     </div>
   );
 }

@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useRBAC } from '../../auth/rbac-provider';
 import { dataManager } from '../../../utils/storage/data-store';
 import MediaRenderer from '../../../components/media/media-renderer';
+import NavigationHeader from '../../../components/shared/navigation-header';
+import Pagination from '../../../components/shared/pagination';
+import Link from 'next/link';
 
 interface Asset {
   id: string;
@@ -27,6 +30,12 @@ export default function AssetsPage() {
   const { isAdmin } = useRBAC();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  
+  const totalPages = Math.ceil(assets.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedAssets = assets.slice(startIndex, startIndex + itemsPerPage);
 
   useEffect(() => {
     loadAssets();
@@ -82,10 +91,16 @@ export default function AssetsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="mv-heading-xl mb-4">📋 Asset Review</h1>
-        <p className="mv-text-muted text-lg">Review and approve pending asset submissions</p>
-      </div>
+      <NavigationHeader 
+        title="📋 Asset Review"
+        subtitle="Review and approve pending asset submissions"
+        backLink="/admin"
+        actions={
+          <Link href="/admin/upload" className="mv-button">
+            + Upload Asset
+          </Link>
+        }
+      />
 
       <div className="mv-card p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
@@ -104,7 +119,7 @@ export default function AssetsPage() {
               <p className="mv-text-muted">This is a new platform - assets will appear here when submitted</p>
             </div>
           ) : (
-            assets.map((asset) => (
+            paginatedAssets.map((asset) => (
               <div key={asset.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                   {/* Media Preview */}
@@ -170,6 +185,14 @@ export default function AssetsPage() {
             ))
           )}
         </div>
+        
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={assets.length}
+        />
       </div>
     </div>
   );

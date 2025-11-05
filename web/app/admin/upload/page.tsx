@@ -6,6 +6,8 @@ import { dataManager } from '../../../utils/storage/data-store';
 import { ipfsClient } from '../../../utils/storage/ipfs-client';
 import { isrcGenerator } from '../../../utils/metadata/isrc-generator';
 import { mediaTagger } from '../../../utils/metadata/media-tagger';
+import NavigationHeader from '../../../components/shared/navigation-header';
+import UploadSuccess from '../../../components/shared/upload-success';
 
 interface UploadForm {
   name: string;
@@ -41,6 +43,8 @@ export default function AdminUploadPage() {
   const [tagInput, setTagInput] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadedAsset, setUploadedAsset] = useState<{name: string; type: string} | null>(null);
 
   const categories = {
     animation: ['Character Animation', 'Environment', 'Effects', 'UI Animation'],
@@ -191,20 +195,11 @@ export default function AdminUploadPage() {
       });
 
       setUploadProgress(100);
-
-      // Reset form
-      setForm({
-        name: '',
-        description: '',
-        type: 'image',
-        category: '',
-        tags: [],
-        file: null,
-        thumbnail: null,
-        metadata: { format: '' }
-      });
+      setUploadedAsset({ name: form.name, type: form.type });
+      setUploadSuccess(true);
     } catch (error) {
       console.error('Upload failed:', error);
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setUploading(false);
     }
@@ -223,10 +218,33 @@ export default function AdminUploadPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="mv-heading-xl mb-4">⬆️ Admin Upload</h1>
-        <p className="mv-text-muted text-lg">Upload media assets to The Mighty Verse</p>
-      </div>
+      <NavigationHeader 
+        title="⬆️ Admin Upload"
+        subtitle="Upload media assets to The Mighty Verse"
+        backLink="/admin"
+      />
+      
+      {uploadSuccess && uploadedAsset ? (
+        <UploadSuccess
+          assetName={uploadedAsset.name}
+          assetType={uploadedAsset.type}
+          isAdmin={true}
+          onUploadAnother={() => {
+            setUploadSuccess(false);
+            setUploadedAsset(null);
+            setForm({
+              name: '',
+              description: '',
+              type: 'image',
+              category: '',
+              tags: [],
+              file: null,
+              thumbnail: null,
+              metadata: { format: '' }
+            });
+          }}
+        />
+      ) : (
 
       <form onSubmit={handleSubmit} className="mv-card p-6 space-y-6">
         {/* Basic Information */}
@@ -475,6 +493,7 @@ export default function AdminUploadPage() {
           </button>
         </div>
       </form>
+      )}
     </div>
   );
 }
