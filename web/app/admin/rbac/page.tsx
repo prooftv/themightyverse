@@ -61,6 +61,14 @@ export default function RBACPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin text-6xl">◈</div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
@@ -116,7 +124,14 @@ export default function RBACPage() {
       <div className="mv-card p-6">
         <h2 className="mv-heading-md mb-6">Current Users ({users.length})</h2>
         <div className="space-y-4">
-          {users.map((user) => (
+          {users.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">👥</div>
+              <h3 className="mv-heading-md mb-2">No Users Yet</h3>
+              <p className="mv-text-muted">This is a new platform - assign roles to get started</p>
+            </div>
+          ) : (
+            users.map((user) => (
             <div key={user.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
                 <div className="flex-1">
@@ -153,7 +168,8 @@ export default function RBACPage() {
                 </div>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

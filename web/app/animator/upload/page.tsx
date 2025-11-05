@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRBAC } from '../../auth/rbac-provider';
+import { dataManager } from '../../../utils/storage/data-store';
+import { ipfsClient } from '../../../utils/storage/ipfs-client';
 
 interface UploadForm {
   name: string;
@@ -20,7 +22,7 @@ interface UploadForm {
 }
 
 export default function UploadPage() {
-  const { isAnimator, isAdmin } = useRBAC();
+  const { isAnimator, isAdmin, wallet } = useRBAC();
   const [form, setForm] = useState<UploadForm>({
     name: '',
     description: '',
@@ -68,28 +70,50 @@ export default function UploadPage() {
     setUploading(true);
     setUploadProgress(0);
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setUploading(false);
-          // Reset form
-          setForm({
-            name: '',
-            description: '',
-            type: 'animation',
-            category: '',
-            tags: [],
-            file: null,
-            thumbnail: null,
-            metadata: { format: '' }
-          });
-          return 100;
-        }
-        return prev + 10;
+    try {
+      // Upload file to IPFS
+      setUploadProgress(30);
+      const fileData = {
+        name: form.file.name,
+        size: form.file.size,
+        type: form.file.type
+      };
+      const fileCid = await ipfsClient.pin(fileData, `asset-${form.name}`);
+      
+      setUploadProgress(70);
+      
+      // Create asset record
+      await dataManager.addItem('assets', {
+        name: form.name,
+        description: form.description,
+        type: form.type,
+        category: form.category,
+        tags: form.tags,
+        fileCid,
+        fileSize: `${(form.file.size / 1024 / 1024).toFixed(1)} MB`,
+        metadata: form.metadata,
+        status: 'draft',
+        creator: wallet
       });
-    }, 200);
+      
+      setUploadProgress(100);
+      
+      // Reset form
+      setForm({
+        name: '',
+        description: '',
+        type: 'animation',
+        category: '',
+        tags: [],
+        file: null,
+        thumbnail: null,
+        metadata: { format: '' }
+      });
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (!isAnimator && !isAdmin) {

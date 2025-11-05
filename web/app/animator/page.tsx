@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRBAC } from '../auth/rbac-provider';
 import Link from 'next/link';
+import { dataManager } from '../../utils/storage/data-store';
 
 interface Asset {
   id: string;
@@ -16,11 +17,23 @@ interface Asset {
 
 export default function AnimatorDashboard() {
   const { isAnimator, isAdmin, wallet } = useRBAC();
-  const [assets, setAssets] = useState<Asset[]>([
-    { id: '1', name: 'Hero Animation Loop', type: 'animation', status: 'approved', createdAt: '2025-01-27', fileSize: '2.4 MB' },
-    { id: '2', name: 'African Warrior Model', type: '3d-model', status: 'submitted', createdAt: '2025-01-26', fileSize: '5.1 MB' },
-    { id: '3', name: 'Tribal Drums Audio', type: 'audio', status: 'draft', createdAt: '2025-01-25', fileSize: '1.8 MB' }
-  ]);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadAssets();
+  }, []);
+
+  const loadAssets = async () => {
+    try {
+      const data = await dataManager.getItemsByField('assets', 'creator', wallet);
+      setAssets(data);
+    } catch (error) {
+      console.error('Failed to load assets:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [newAsset, setNewAsset] = useState({
@@ -29,31 +42,41 @@ export default function AnimatorDashboard() {
     file: null as File | null
   });
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!newAsset.name || !newAsset.file) return;
     
-    const asset: Asset = {
-      id: Date.now().toString(),
-      name: newAsset.name,
-      type: newAsset.type,
-      status: 'draft',
-      createdAt: new Date().toISOString().split('T')[0],
-      fileSize: `${(newAsset.file.size / 1024 / 1024).toFixed(1)} MB`
-    };
-    
-    setAssets(prev => [asset, ...prev]);
-    setNewAsset({ name: '', type: 'animation', file: null });
-    setShowUploadForm(false);
+    try {
+      await dataManager.addItem('assets', {
+        name: newAsset.name,
+        type: newAsset.type,
+        status: 'draft',
+        creator: wallet,
+        fileSize: `${(newAsset.file.size / 1024 / 1024).toFixed(1)} MB`
+      });
+      await loadAssets();
+      setNewAsset({ name: '', type: 'animation', file: null });
+      setShowUploadForm(false);
+    } catch (error) {
+      console.error('Failed to upload asset:', error);
+    }
   };
 
-  const handleSubmit = (id: string) => {
-    setAssets(prev => prev.map(asset => 
-      asset.id === id ? { ...asset, status: 'submitted' as const } : asset
-    ));
+  const handleSubmit = async (id: string) => {
+    try {
+      await dataManager.updateItem('assets', id, { status: 'submitted' });
+      await loadAssets();
+    } catch (error) {
+      console.error('Failed to submit asset:', error);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setAssets(prev => prev.filter(asset => asset.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await dataManager.deleteItem('assets', id);
+      await loadAssets();
+    } catch (error) {
+      console.error('Failed to delete asset:', error);
+    }
   };
 
   if (!isAnimator && !isAdmin) {
@@ -68,6 +91,14 @@ export default function AnimatorDashboard() {
         </div>
       </div>
     );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin text-6xl">◈</div>
+      </div>
+    );
+  }
   }
 
   const stats = {

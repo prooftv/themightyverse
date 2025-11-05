@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRBAC } from '../../auth/rbac-provider';
+import { dataManager } from '../../../utils/storage/data-store';
 
 interface MintRequest {
   id: string;
@@ -21,75 +22,57 @@ interface MintRequest {
 
 export default function MintQueuePage() {
   const { isAdmin } = useRBAC();
-  const [requests, setRequests] = useState<MintRequest[]>([
-    {
-      id: '1',
-      assetName: 'Golden Shovel Hero #001',
-      assetType: 'animation',
-      creator: '0x1234...5678',
-      metadata: {
-        title: 'Golden Shovel Hero #001',
-        description: 'Legendary African warrior with golden shovel artifact',
-        attributes: [
-          { trait_type: 'Era', value: 'Digital' },
-          { trait_type: 'Rarity', value: 'Legendary' },
-          { trait_type: 'Power', value: '95' }
-        ]
-      },
-      status: 'pending',
-      submittedAt: '2025-01-27T10:00:00Z'
-    },
-    {
-      id: '2',
-      assetName: 'Ancestral Wisdom Mural',
-      assetType: 'mural',
-      creator: '0x9876...5432',
-      metadata: {
-        title: 'Ancestral Wisdom Mural',
-        description: '2.5D holographic mural depicting ancient African wisdom',
-        attributes: [
-          { trait_type: 'Era', value: 'Ancient' },
-          { trait_type: 'Rarity', value: 'Epic' },
-          { trait_type: 'Wisdom', value: '88' }
-        ]
-      },
-      status: 'approved',
-      submittedAt: '2025-01-26T15:30:00Z',
-      reviewedBy: 'admin',
-      reviewedAt: '2025-01-27T09:00:00Z'
+  const [requests, setRequests] = useState<MintRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadRequests();
+  }, []);
+
+  const loadRequests = async () => {
+    try {
+      const data = await dataManager.getData('mintRequests');
+      setRequests(data);
+    } catch (error) {
+      console.error('Failed to load mint requests:', error);
+    } finally {
+      setLoading(false);
     }
-  ]);
-
-  const handleApprove = (id: string) => {
-    setRequests(prev => prev.map(request => 
-      request.id === id 
-        ? { 
-            ...request, 
-            status: 'approved' as const,
-            reviewedBy: 'admin',
-            reviewedAt: new Date().toISOString()
-          } 
-        : request
-    ));
   };
 
-  const handleReject = (id: string) => {
-    setRequests(prev => prev.map(request => 
-      request.id === id 
-        ? { 
-            ...request, 
-            status: 'rejected' as const,
-            reviewedBy: 'admin',
-            reviewedAt: new Date().toISOString()
-          } 
-        : request
-    ));
+  const handleApprove = async (id: string) => {
+    try {
+      await dataManager.updateItem('mintRequests', id, {
+        status: 'approved',
+        reviewedBy: 'admin',
+        reviewedAt: new Date().toISOString()
+      });
+      await loadRequests();
+    } catch (error) {
+      console.error('Failed to approve request:', error);
+    }
   };
 
-  const handleMint = (id: string) => {
-    setRequests(prev => prev.map(request => 
-      request.id === id ? { ...request, status: 'minted' as const } : request
-    ));
+  const handleReject = async (id: string) => {
+    try {
+      await dataManager.updateItem('mintRequests', id, {
+        status: 'rejected',
+        reviewedBy: 'admin',
+        reviewedAt: new Date().toISOString()
+      });
+      await loadRequests();
+    } catch (error) {
+      console.error('Failed to reject request:', error);
+    }
+  };
+
+  const handleMint = async (id: string) => {
+    try {
+      await dataManager.updateItem('mintRequests', id, { status: 'minted' });
+      await loadRequests();
+    } catch (error) {
+      console.error('Failed to mint request:', error);
+    }
   };
 
   if (!isAdmin) {
@@ -101,6 +84,14 @@ export default function MintQueuePage() {
         </div>
       </div>
     );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin text-6xl">◈</div>
+      </div>
+    );
+  }
   }
 
   const pendingCount = requests.filter(r => r.status === 'pending').length;

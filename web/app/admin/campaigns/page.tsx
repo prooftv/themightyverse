@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRBAC } from '../../auth/rbac-provider';
+import { dataManager } from '../../../utils/storage/data-store';
 
 interface Campaign {
   id: string;
@@ -16,10 +17,28 @@ interface Campaign {
 
 export default function CampaignsPage() {
   const { isAdmin } = useRBAC();
-  const [campaigns, setCampaigns] = useState<Campaign[]>([
-    { id: '1', name: 'Golden Shovel Legacy', sponsor: 'Heritage Foundation', budget: 50000, status: 'active', startDate: '2025-01-01', endDate: '2025-03-31', assets: 12 },
-    { id: '2', name: 'African Heroes Collection', sponsor: 'Cultural Arts Council', budget: 75000, status: 'draft', startDate: '2025-02-01', endDate: '2025-05-31', assets: 8 }
-  ]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [sponsors, setSponsors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [campaignData, sponsorData] = await Promise.all([
+        dataManager.getData('campaigns'),
+        dataManager.getData('sponsors')
+      ]);
+      setCampaigns(campaignData);
+      setSponsors(sponsorData);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newCampaign, setNewCampaign] = useState({
     name: '',
@@ -29,25 +48,30 @@ export default function CampaignsPage() {
     endDate: ''
   });
 
-  const handleCreateCampaign = () => {
+  const handleCreateCampaign = async () => {
     if (!newCampaign.name || !newCampaign.sponsor) return;
     
-    const campaign: Campaign = {
-      id: Date.now().toString(),
-      ...newCampaign,
-      status: 'draft',
-      assets: 0
-    };
-    
-    setCampaigns(prev => [...prev, campaign]);
-    setNewCampaign({ name: '', sponsor: '', budget: 0, startDate: '', endDate: '' });
-    setShowCreateForm(false);
+    try {
+      await dataManager.addItem('campaigns', {
+        ...newCampaign,
+        status: 'draft',
+        assets: 0
+      });
+      await loadData();
+      setNewCampaign({ name: '', sponsor: '', budget: 0, startDate: '', endDate: '' });
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error('Failed to create campaign:', error);
+    }
   };
 
-  const handleStatusChange = (id: string, status: Campaign['status']) => {
-    setCampaigns(prev => prev.map(campaign => 
-      campaign.id === id ? { ...campaign, status } : campaign
-    ));
+  const handleStatusChange = async (id: string, status: Campaign['status']) => {
+    try {
+      await dataManager.updateItem('campaigns', id, { status });
+      await loadData();
+    } catch (error) {
+      console.error('Failed to update campaign:', error);
+    }
   };
 
   if (!isAdmin) {
@@ -59,6 +83,14 @@ export default function CampaignsPage() {
         </div>
       </div>
     );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin text-6xl">◈</div>
+      </div>
+    );
+  }
   }
 
   return (
@@ -94,12 +126,16 @@ export default function CampaignsPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Sponsor</label>
-                <input
-                  type="text"
+                <select
                   value={newCampaign.sponsor}
                   onChange={(e) => setNewCampaign(prev => ({ ...prev, sponsor: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
-                />
+                >
+                  <option value="">Select sponsor</option>
+                  {sponsors.map(sponsor => (
+                    <option key={sponsor.id} value={sponsor.name}>{sponsor.name}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Budget ($)</label>
@@ -129,7 +165,17 @@ export default function CampaignsPage() {
 
       {/* Campaign List */}
       <div className="space-y-4">
-        {campaigns.map((campaign) => (
+        {campaigns.length === 0 ? (
+          <div className="mv-card p-12 text-center">
+            <div className="text-6xl mb-4">📢</div>
+            <h3 className="mv-heading-md mb-2">No Campaigns Yet</h3>
+            <p className="mv-text-muted mb-6">This is a new platform - create your first campaign</p>
+            <button onClick={() => setShowCreateForm(true)} className="mv-button">
+              Create First Campaign
+            </button>
+          </div>
+        ) : (
+          campaigns.map((campaign) => (
           <div key={campaign.id} className="mv-card p-6">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
               <div className="flex-1">
@@ -174,7 +220,8 @@ export default function CampaignsPage() {
               </div>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

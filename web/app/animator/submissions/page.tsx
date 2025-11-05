@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRBAC } from '../../auth/rbac-provider';
+import { dataManager } from '../../../utils/storage/data-store';
 
 interface Submission {
   id: string;
@@ -18,50 +19,23 @@ interface Submission {
 
 export default function SubmissionsPage() {
   const { isAnimator, isAdmin } = useRBAC();
-  const [submissions, setSubmissions] = useState<Submission[]>([
-    {
-      id: '1',
-      name: 'Hero Animation Loop v2',
-      type: 'animation',
-      status: 'approved',
-      submittedAt: '2025-01-27T10:00:00Z',
-      reviewedAt: '2025-01-27T14:30:00Z',
-      reviewer: 'admin',
-      feedback: 'Excellent work! The animation flows perfectly and meets all quality standards.',
-      version: 2,
-      fileSize: '2.4 MB'
-    },
-    {
-      id: '2',
-      name: 'African Warrior Model',
-      type: '3d-model',
-      status: 'revision-requested',
-      submittedAt: '2025-01-26T15:30:00Z',
-      reviewedAt: '2025-01-27T09:15:00Z',
-      reviewer: 'admin',
-      feedback: 'Great model! Please reduce polygon count to under 10k for optimization.',
-      version: 1,
-      fileSize: '5.1 MB'
-    },
-    {
-      id: '3',
-      name: 'Tribal Drums Audio',
-      type: 'audio',
-      status: 'under-review',
-      submittedAt: '2025-01-25T12:00:00Z',
-      version: 1,
-      fileSize: '1.8 MB'
-    },
-    {
-      id: '4',
-      name: 'Golden Texture Pack',
-      type: 'texture',
-      status: 'pending',
-      submittedAt: '2025-01-24T16:45:00Z',
-      version: 1,
-      fileSize: '3.2 MB'
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadSubmissions();
+  }, []);
+
+  const loadSubmissions = async () => {
+    try {
+      const data = await dataManager.getData('submissions');
+      setSubmissions(data);
+    } catch (error) {
+      console.error('Failed to load submissions:', error);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'date' | 'status' | 'name'>('date');
@@ -81,21 +55,29 @@ export default function SubmissionsPage() {
       }
     });
 
-  const handleResubmit = (id: string) => {
-    setSubmissions(prev => prev.map(sub => 
-      sub.id === id 
-        ? { 
-            ...sub, 
-            status: 'pending' as const, 
-            version: sub.version + 1,
-            submittedAt: new Date().toISOString()
-          } 
-        : sub
-    ));
+  const handleResubmit = async (id: string) => {
+    try {
+      const submission = submissions.find(s => s.id === id);
+      if (submission) {
+        await dataManager.updateItem('submissions', id, {
+          status: 'pending',
+          version: submission.version + 1,
+          submittedAt: new Date().toISOString()
+        });
+        await loadSubmissions();
+      }
+    } catch (error) {
+      console.error('Failed to resubmit:', error);
+    }
   };
 
-  const handleWithdraw = (id: string) => {
-    setSubmissions(prev => prev.filter(sub => sub.id !== id));
+  const handleWithdraw = async (id: string) => {
+    try {
+      await dataManager.deleteItem('submissions', id);
+      await loadSubmissions();
+    } catch (error) {
+      console.error('Failed to withdraw submission:', error);
+    }
   };
 
   if (!isAnimator && !isAdmin) {
@@ -107,6 +89,14 @@ export default function SubmissionsPage() {
         </div>
       </div>
     );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin text-6xl">◈</div>
+      </div>
+    );
+  }
   }
 
   const stats = {

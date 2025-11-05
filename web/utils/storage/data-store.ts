@@ -11,6 +11,8 @@ interface DataStore {
   submissions: string;
   sponsors: string;
   users: string;
+  mintRequests: string;
+  roles: string;
 }
 
 const STORE_KEY = 'mv-data-store';
@@ -30,7 +32,9 @@ class DataManager {
           campaigns: await ipfsClient.pin([], 'campaigns-registry'),
           submissions: await ipfsClient.pin([], 'submissions-registry'),
           sponsors: await ipfsClient.pin([], 'sponsors-registry'),
-          users: await ipfsClient.pin([], 'users-registry')
+          users: await ipfsClient.pin([], 'users-registry'),
+          mintRequests: await ipfsClient.pin([], 'mint-requests-registry'),
+          roles: await ipfsClient.pin([], 'roles-registry')
         };
         localStorage.setItem(STORE_KEY, JSON.stringify(this.store));
       }
@@ -70,6 +74,24 @@ class DataManager {
     const data = await this.getData(type);
     const filtered = data.filter(item => item.id !== id);
     await this.saveData(type, filtered);
+  }
+
+  async getItemsByField(type: keyof DataStore, field: string, value: any): Promise<any[]> {
+    const data = await this.getData(type);
+    return data.filter(item => item[field] === value);
+  }
+
+  async linkItems(fromType: keyof DataStore, fromId: string, toType: keyof DataStore, toId: string): Promise<void> {
+    const fromData = await this.getData(fromType);
+    const fromIndex = fromData.findIndex(item => item.id === fromId);
+    if (fromIndex !== -1) {
+      if (!fromData[fromIndex].linkedItems) fromData[fromIndex].linkedItems = {};
+      if (!fromData[fromIndex].linkedItems[toType]) fromData[fromIndex].linkedItems[toType] = [];
+      if (!fromData[fromIndex].linkedItems[toType].includes(toId)) {
+        fromData[fromIndex].linkedItems[toType].push(toId);
+        await this.saveData(fromType, fromData);
+      }
+    }
   }
 }
 
