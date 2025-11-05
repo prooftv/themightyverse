@@ -43,19 +43,18 @@ export default function Animations() {
   const loadAssets = async () => {
     try {
       const data = await dataManager.getData('assets');
-      console.log('🔍 Raw assets data:', data);
-      
+      // Raw assets data is available in `data`.
       // Filter for approved video/animation assets
       const animations = data.filter(asset => {
         const isApproved = asset.status === 'approved';
         const isAnimation = asset.type === 'animation' || asset.type === 'video' || asset.mimeType?.startsWith('video/');
-        
-        console.log(`Asset "${asset.name}": status=${asset.status}, type=${asset.type}, mimeType=${asset.mimeType}, approved=${isApproved}, isAnimation=${isAnimation}`);
-        
         return isApproved && isAnimation;
       });
-      
-      console.log('🎬 Filtered animations:', animations);
+      // In debug mode you can inspect animations; otherwise avoid noisy logs
+      if (process.env.NEXT_PUBLIC_DEBUG === 'true') {
+        // eslint-disable-next-line no-console
+        console.log('🎬 Filtered animations:', animations);
+      }
       setAssets(animations);
       if (animations.length > 0) {
         setSelectedAsset(animations[0]);
@@ -113,6 +112,7 @@ export default function Animations() {
                 thumbnailCid={selectedAsset.thumbnailCid}
                 mimeType={selectedAsset.mimeType}
                 fileName={selectedAsset.fileName}
+                renditions={(selectedAsset.metadata as any)?.renditions}
                 title={selectedAsset.name}
                 className="w-full h-96 md:h-[500px] lg:h-[600px]"
               />

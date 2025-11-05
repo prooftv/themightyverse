@@ -9,6 +9,13 @@ interface HolographicVideoPlayerProps {
   fileName?: string;
   title?: string;
   className?: string;
+  renditions?: Array<{
+    cid: string;
+    width?: number;
+    height?: number;
+    bitrate?: number;
+    label?: string;
+  }>;
 }
 
 export default function HolographicVideoPlayer({ 
@@ -17,13 +24,17 @@ export default function HolographicVideoPlayer({
   mimeType, 
   fileName,
   title,
-  className = "w-full h-96 md:h-[500px] lg:h-[600px]"
+  className = "w-full aspect-video max-h-[60vh] min-h-[220px]"
 }: HolographicVideoPlayerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [holographicIntensity, setHolographicIntensity] = useState(0.7);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const debug = process.env.NEXT_PUBLIC_DEBUG === 'true';
+  const [inView, setInView] = useState(false);
+  const [selectedCid, setSelectedCid] = useState<string | undefined>(fileCid);
   
   const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
   
@@ -43,14 +54,81 @@ export default function HolographicVideoPlayer({
   
   // Debug logging
   useEffect(() => {
-    console.log('HolographicVideoPlayer Debug:', {
-      fileCid,
-      fileUrl,
-      mimeType,
-      fileName,
-      gateway
-    });
-  }, [fileCid, fileUrl, mimeType, fileName, gateway]);
+    // determine small screen to reduce visual complexity
+    const onResize = () => {
+      try {
+        setIsSmallScreen(window.innerWidth < 640);
+      } catch (e) {
+        setIsSmallScreen(false);
+      }
+    };
+
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Select the best CID based on available renditions and screen size
+  useEffect(() => {
+    if (renditions && renditions.length > 0) {
+      // pick smallest by width when on small screen, otherwise pick highest width
+      const numericRenditions = renditions
+        .map(r => ({ ...r, width: r.width || (r.height ? Math.round((r.height * 16) / 9) : undefined) }))
+        .filter(r => r.cid);
+
+      if (isSmallScreen) {
+        const smallest = numericRenditions.reduce((prev, cur) => {
+          if (!prev.width) return cur;
+          if (!cur.width) return prev;
+          return cur.width < prev.width ? cur : prev;
+        }, numericRenditions[0]);
+        setSelectedCid(smallest?.cid || fileCid);
+      } else {
+        const largest = numericRenditions.reduce((prev, cur) => {
+          if (!prev.width) return cur;
+          if (!cur.width) return prev;
+          return cur.width > prev.width ? cur : prev;
+        }, numericRenditions[0]);
+        setSelectedCid(largest?.cid || fileCid);
+      }
+    } else {
+      setSelectedCid(fileCid);
+    }
+  }, [renditions, isSmallScreen, fileCid]);
+
+  // Lazy-load: only attach source when player is in viewport
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setInView(true);
+            io.disconnect();
+          }
+        });
+      }, { rootMargin: '200px' });
+      io.observe(el);
+      return () => io.disconnect();
+    } else {
+      // fallback: assume in view
+      setInView(true);
+    }
+  }, [videoRef]);
+
+  useEffect(() => {
+    if (debug) {
+      // only log in debug mode to avoid noisy production consoles
+      console.log('HolographicVideoPlayer Debug:', {
+        fileCid,
+        fileUrl,
+        mimeType,
+        fileName,
+        gateway
+      });
+    }
+  }, [fileCid, fileUrl, mimeType, fileName, gateway, debug]);
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -111,8 +189,8 @@ export default function HolographicVideoPlayer({
             }}
           />
           
-          {/* Holographic Rings */}
-          {[...Array(3)].map((_, i) => (
+          {/* Holographic Rings (reduced on small screens) */}
+          {[...Array(isSmallScreen ? 1 : 3)].map((_, i) => (
             <div
               key={i}
               className="absolute rounded-full border border-yellow-400/20"
@@ -124,9 +202,9 @@ export default function HolographicVideoPlayer({
               }}
             />
           ))}
-          
-          {/* Floating Particles */}
-          {[...Array(12)].map((_, i) => (
+
+          {/* Floating Particles (lighter on small screens for perf) */}
+          {[...Array(isSmallScreen ? 4 : 12)].map((_, i) => (
             <div
               key={i}
               className="absolute w-1 h-1 bg-yellow-400 rounded-full"
@@ -163,11 +241,14 @@ export default function HolographicVideoPlayer({
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           style={{
-            transform: `translateZ(${holographicIntensity * 5}px)`,
-            filter: `drop-shadow(0 0 ${holographicIntensity * 20}px rgba(212, 175, 55, 0.3))`
+            transform: `translateZ(${holographicIntensity * (isSmallScreen ? 2 : 5)}px)`,
+            filter: `drop-shadow(0 0 ${holographicIntensity * (isSmallScreen ? 8 : 20)}px rgba(212, 175, 55, 0.25))`
           }}
         >
-          <source src={fileUrl} type={mimeType || 'video/mp4'} />
+          {/* Attach source only when in view to avoid unnecessary buffering */}
+          {inView && selectedCid && (
+            <source src={`${gateway}${selectedCid}`} type={mimeType || 'video/mp4'} />
+          )}
           <track kind="captions" />
           Your browser does not support video playback.
         </video>
