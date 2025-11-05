@@ -5,6 +5,29 @@
 
 import { ipfsClient } from './ipfs-client';
 
+interface MediaMetadata {
+  // File Information
+  fileCid?: string;           // IPFS hash of actual file
+  thumbnailCid?: string;      // IPFS hash of thumbnail
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
+  
+  // Media-Specific Metadata
+  dimensions?: { width: number; height: number };
+  duration?: number;          // For audio/video (seconds)
+  bitrate?: number;           // kbps
+  sampleRate?: number;        // Hz (for audio)
+  frameRate?: number;         // fps (for video)
+  
+  // ISRC for audio/video
+  isrc?: string;              // International Standard Recording Code
+  
+  // Platform Metadata
+  uploadedAt?: string;
+  uploadedBy?: string;
+}
+
 interface DataStore {
   assets: string; // IPFS CID
   campaigns: string;

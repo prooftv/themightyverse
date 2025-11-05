@@ -25,6 +25,7 @@ const stats: DashboardStat[] = [
 ];
 
 const quickActions = [
+  { name: 'Upload Media', href: '/admin/upload', icon: '⬆️', description: 'Upload audio, video, and visual assets' },
   { name: 'Review Assets', href: '/admin/assets', icon: '📋', description: 'Review pending asset submissions' },
   { name: 'Manage Roles', href: '/admin/rbac', icon: '👥', description: 'Assign and manage user roles' },
   { name: 'Campaign Setup', href: '/admin/campaigns', icon: '📢', description: 'Create new advertising campaigns' },

@@ -1,6 +1,6 @@
 /**
- * IPFS Client - Real Data Storage
- * Replaces mock data with IPFS persistence
+ * IPFS Client - Real Data Storage with File Upload Support
+ * Handles both JSON data and binary file uploads to IPFS
  */
 
 export class IPFSClient {
@@ -44,6 +44,57 @@ export class IPFSClient {
       return result.IpfsHash;
     } catch (error) {
       console.error('IPFS pin error:', error);
+      throw error;
+    }
+  }
+
+  async pinFile(file: File, name?: string, onProgress?: (progress: number) => void): Promise<string> {
+    if (!this.apiKey) {
+      throw new Error('PINATA_JWT not configured');
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('pinataMetadata', JSON.stringify({
+        name: name || file.name,
+        keyvalues: {
+          platform: 'mighty-verse',
+          fileType: file.type,
+          fileSize: file.size.toString(),
+          timestamp: new Date().toISOString()
+        }
+      }));
+
+      const xhr = new XMLHttpRequest();
+      
+      return new Promise((resolve, reject) => {
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable && onProgress) {
+            const progress = Math.round((e.loaded / e.total) * 100);
+            onProgress(progress);
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            const result = JSON.parse(xhr.responseText);
+            resolve(result.IpfsHash);
+          } else {
+            reject(new Error(`File upload failed: ${xhr.statusText}`));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('File upload failed'));
+        });
+
+        xhr.open('POST', 'https://api.pinata.cloud/pinning/pinFileToIPFS');
+        xhr.setRequestHeader('Authorization', `Bearer ${this.apiKey}`);
+        xhr.send(formData);
+      });
+    } catch (error) {
+      console.error('File upload error:', error);
       throw error;
     }
   }

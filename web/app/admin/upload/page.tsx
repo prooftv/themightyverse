@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { useRBAC } from '../../auth/rbac-provider';
 import { dataManager } from '../../../utils/storage/data-store';
 import { ipfsClient } from '../../../utils/storage/ipfs-client';
+import { isrcGenerator } from '../../../utils/metadata/isrc-generator';
+import { mediaTagger } from '../../../utils/metadata/media-tagger';
 
 interface UploadForm {
   name: string;
   description: string;
-  type: 'animation' | '3d-model' | 'audio' | 'texture';
+  type: 'animation' | '3d-model' | 'audio' | 'video' | 'image' | 'texture';
   category: string;
   tags: string[];
   file: File | null;
@@ -17,23 +19,24 @@ interface UploadForm {
     duration?: number;
     dimensions?: string;
     frameRate?: number;
+    bitrate?: number;
+    sampleRate?: number;
     format: string;
+    isrc?: string;
   };
 }
 
-export default function UploadPage() {
-  const { isAnimator, isAdmin, wallet } = useRBAC();
+export default function AdminUploadPage() {
+  const { isAdmin, wallet } = useRBAC();
   const [form, setForm] = useState<UploadForm>({
     name: '',
     description: '',
-    type: 'animation',
+    type: 'image',
     category: '',
     tags: [],
     file: null,
     thumbnail: null,
-    metadata: {
-      format: ''
-    }
+    metadata: { format: '' }
   });
   const [tagInput, setTagInput] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -42,25 +45,94 @@ export default function UploadPage() {
   const categories = {
     animation: ['Character Animation', 'Environment', 'Effects', 'UI Animation'],
     '3d-model': ['Characters', 'Props', 'Environments', 'Vehicles'],
-    audio: ['Music', 'Sound Effects', 'Voice', 'Ambient'],
+    audio: ['Music', 'Sound Effects', 'Voice', 'Ambient', 'Podcast'],
+    video: ['Animation', 'Live Action', 'Tutorial', 'Promotional'],
+    image: ['Artwork', 'Photography', 'Concept Art', 'UI Design'],
     texture: ['Materials', 'Patterns', 'Overlays', 'Backgrounds']
+  };
+
+  const handleFileSelect = async (file: File) => {
+    setForm(prev => ({ ...prev, file }));
+    
+    // Auto-generate ISRC and extract metadata for audio/video
+    if (file.type.startsWith('audio/')) {
+      const isrc = isrcGenerator.generateISRC('audio');
+      try {
+        const audioMeta = await mediaTagger.extractAudioMetadata(file);
+        const autoTags = mediaTagger.generateAutoTags(file, audioMeta);
+        setForm(prev => ({
+          ...prev,
+          type: 'audio',
+          tags: [...new Set([...prev.tags, ...autoTags])],
+          metadata: { 
+            ...prev.metadata, 
+            isrc, 
+            format: file.type,
+            duration: audioMeta.duration,
+            bitrate: audioMeta.bitrate,
+            sampleRate: audioMeta.sampleRate
+          }
+        }));
+      } catch (error) {
+        console.error('Audio metadata extraction failed:', error);
+        setForm(prev => ({
+          ...prev,
+          type: 'audio',
+          metadata: { ...prev.metadata, isrc, format: file.type }
+        }));
+      }
+    } else if (file.type.startsWith('video/')) {
+      const isrc = isrcGenerator.generateISRC('video');
+      try {
+        const videoMeta = await mediaTagger.extractVideoMetadata(file);
+        const autoTags = mediaTagger.generateAutoTags(file, videoMeta);
+        
+        // Generate thumbnail
+        try {
+          const thumbnailBlob = await mediaTagger.generateVideoThumbnail(file);
+          const thumbnailFile = new File([thumbnailBlob], `${file.name}-thumb.jpg`, { type: 'image/jpeg' });
+          setForm(prev => ({ ...prev, thumbnail: thumbnailFile }));
+        } catch (thumbError) {
+          console.error('Thumbnail generation failed:', thumbError);
+        }
+        
+        setForm(prev => ({
+          ...prev,
+          type: 'video',
+          tags: [...new Set([...prev.tags, ...autoTags])],
+          metadata: { 
+            ...prev.metadata, 
+            isrc, 
+            format: file.type,
+            duration: videoMeta.duration,
+            frameRate: videoMeta.frameRate,
+            dimensions: videoMeta.width && videoMeta.height ? `${videoMeta.width}x${videoMeta.height}` : undefined
+          }
+        }));
+      } catch (error) {
+        console.error('Video metadata extraction failed:', error);
+        setForm(prev => ({
+          ...prev,
+          type: 'video',
+          metadata: { ...prev.metadata, isrc, format: file.type }
+        }));
+      }
+    } else {
+      // For other file types, generate basic auto-tags
+      const autoTags = mediaTagger.generateAutoTags(file);
+      setForm(prev => ({
+        ...prev,
+        tags: [...new Set([...prev.tags, ...autoTags])],
+        metadata: { ...prev.metadata, format: file.type }
+      }));
+    }
   };
 
   const handleAddTag = () => {
     if (tagInput.trim() && !form.tags.includes(tagInput.trim())) {
-      setForm(prev => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()]
-      }));
+      setForm(prev => ({ ...prev, tags: [...prev.tags, tagInput.trim()] }));
       setTagInput('');
     }
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    setForm(prev => ({
-      ...prev,
-      tags: prev.tags.filter(t => t !== tag)
-    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,28 +143,27 @@ export default function UploadPage() {
     setUploadProgress(0);
 
     try {
-      // Upload actual file to IPFS
-      setUploadProgress(10);
+      // Upload main file to IPFS
       const fileCid = await ipfsClient.pinFile(
         form.file,
         `${form.name}-${Date.now()}`,
-        (progress) => setUploadProgress(Math.round(progress * 0.6))
+        (progress) => setUploadProgress(Math.round(progress * 0.7))
       );
-      
-      setUploadProgress(70);
-      
+
+      setUploadProgress(75);
+
       // Upload thumbnail if provided
       let thumbnailCid;
       if (form.thumbnail) {
         thumbnailCid = await ipfsClient.pinFile(
           form.thumbnail,
           `${form.name}-thumb-${Date.now()}`,
-          (progress) => setUploadProgress(70 + Math.round(progress * 0.2))
+          (progress) => setUploadProgress(75 + Math.round(progress * 0.15))
         );
       }
-      
+
       setUploadProgress(90);
-      
+
       // Create asset record with enhanced metadata
       await dataManager.addItem('assets', {
         name: form.name,
@@ -105,20 +176,27 @@ export default function UploadPage() {
         fileName: form.file.name,
         fileSize: form.file.size,
         mimeType: form.file.type,
-        metadata: form.metadata,
-        status: 'pending', // Animator uploads need approval
+        metadata: {
+          ...form.metadata,
+          dimensions: form.metadata.dimensions,
+          duration: form.metadata.duration,
+          frameRate: form.metadata.frameRate,
+          bitrate: form.metadata.bitrate,
+          sampleRate: form.metadata.sampleRate
+        },
+        status: 'approved', // Admin uploads are auto-approved
         creator: wallet,
-        submittedBy: wallet,
-        submittedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: wallet
       });
-      
+
       setUploadProgress(100);
-      
+
       // Reset form
       setForm({
         name: '',
         description: '',
-        type: 'animation',
+        type: 'image',
         category: '',
         tags: [],
         file: null,
@@ -132,12 +210,12 @@ export default function UploadPage() {
     }
   };
 
-  if (!isAnimator && !isAdmin) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="mv-card p-8 text-center">
           <h1 className="mv-heading-lg text-red-400 mb-4">Access Denied</h1>
-          <p className="mv-text-muted">Animator privileges required</p>
+          <p className="mv-text-muted">Admin privileges required</p>
         </div>
       </div>
     );
@@ -146,14 +224,14 @@ export default function UploadPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h1 className="mv-heading-xl mb-4">📤 Upload Asset</h1>
-        <p className="mv-text-muted text-lg">Upload your holographic creations to The Mighty Verse</p>
+        <h1 className="mv-heading-xl mb-4">⬆️ Admin Upload</h1>
+        <p className="mv-text-muted text-lg">Upload media assets to The Mighty Verse</p>
       </div>
 
       <form onSubmit={handleSubmit} className="mv-card p-6 space-y-6">
         {/* Basic Information */}
         <div>
-          <h2 className="mv-heading-md mb-4">Basic Information</h2>
+          <h2 className="mv-heading-md mb-4">Asset Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Asset Name *</label>
@@ -178,9 +256,11 @@ export default function UploadPage() {
                 className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
                 required
               >
+                <option value="image">Image</option>
+                <option value="audio">Audio</option>
+                <option value="video">Video</option>
                 <option value="animation">Animation</option>
                 <option value="3d-model">3D Model</option>
-                <option value="audio">Audio</option>
                 <option value="texture">Texture</option>
               </select>
             </div>
@@ -191,7 +271,7 @@ export default function UploadPage() {
             <textarea
               value={form.description}
               onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe your asset..."
+              placeholder="Describe the asset..."
               rows={3}
               className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50"
             />
@@ -220,12 +300,47 @@ export default function UploadPage() {
                   ...prev, 
                   metadata: { ...prev.metadata, format: e.target.value }
                 }))}
-                placeholder="e.g., MP4, FBX, WAV"
+                placeholder="e.g., MP4, MP3, PNG"
                 className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50"
               />
             </div>
           </div>
         </div>
+
+        {/* ISRC for Audio/Video */}
+        {(form.type === 'audio' || form.type === 'video') && (
+          <div>
+            <h2 className="mv-heading-md mb-4">ISRC Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">ISRC Code</label>
+                <input
+                  type="text"
+                  value={form.metadata.isrc || ''}
+                  onChange={(e) => setForm(prev => ({ 
+                    ...prev, 
+                    metadata: { ...prev.metadata, isrc: e.target.value }
+                  }))}
+                  placeholder="Auto-generated on file upload"
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50"
+                  readOnly
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Duration (seconds)</label>
+                <input
+                  type="number"
+                  value={form.metadata.duration || ''}
+                  onChange={(e) => setForm(prev => ({ 
+                    ...prev, 
+                    metadata: { ...prev.metadata, duration: Number(e.target.value) }
+                  }))}
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tags */}
         <div>
@@ -239,7 +354,7 @@ export default function UploadPage() {
                 <span>{tag}</span>
                 <button
                   type="button"
-                  onClick={() => handleRemoveTag(tag)}
+                  onClick={() => setForm(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}
                   className="text-yellow-400 hover:text-red-400"
                 >
                   ×
@@ -275,8 +390,8 @@ export default function UploadPage() {
               <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
                 <input
                   type="file"
-                  onChange={(e) => setForm(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
-                  accept=".mp4,.mov,.fbx,.obj,.mp3,.wav,.jpg,.png,.glb,.gltf"
+                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                  accept=".mp4,.mov,.mp3,.wav,.jpg,.png,.gif,.webp,.fbx,.obj,.glb,.gltf"
                   className="hidden"
                   id="main-file"
                   required
@@ -284,7 +399,7 @@ export default function UploadPage() {
                 <label htmlFor="main-file" className="cursor-pointer">
                   <div className="text-4xl mb-2">📁</div>
                   <div className="text-white mb-1">
-                    {form.file ? form.file.name : 'Click to upload main file'}
+                    {form.file ? form.file.name : 'Click to upload file'}
                   </div>
                   <div className="text-sm mv-text-muted">
                     {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 100MB'}
@@ -317,57 +432,11 @@ export default function UploadPage() {
           </div>
         </div>
 
-        {/* Additional Metadata */}
-        {form.type === 'animation' && (
-          <div>
-            <h2 className="mv-heading-md mb-4">Animation Details</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Duration (seconds)</label>
-                <input
-                  type="number"
-                  value={form.metadata.duration || ''}
-                  onChange={(e) => setForm(prev => ({ 
-                    ...prev, 
-                    metadata: { ...prev.metadata, duration: Number(e.target.value) }
-                  }))}
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Frame Rate (fps)</label>
-                <input
-                  type="number"
-                  value={form.metadata.frameRate || ''}
-                  onChange={(e) => setForm(prev => ({ 
-                    ...prev, 
-                    metadata: { ...prev.metadata, frameRate: Number(e.target.value) }
-                  }))}
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Dimensions</label>
-                <input
-                  type="text"
-                  value={form.metadata.dimensions || ''}
-                  onChange={(e) => setForm(prev => ({ 
-                    ...prev, 
-                    metadata: { ...prev.metadata, dimensions: e.target.value }
-                  }))}
-                  placeholder="1920x1080"
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Upload Progress */}
         {uploading && (
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Uploading...</span>
+              <span className="text-sm font-medium">Uploading to IPFS...</span>
               <span className="text-sm mv-text-muted">{uploadProgress}%</span>
             </div>
             <div className="w-full bg-white/10 rounded-full h-2">
@@ -394,7 +463,7 @@ export default function UploadPage() {
             onClick={() => setForm({
               name: '',
               description: '',
-              type: 'animation',
+              type: 'image',
               category: '',
               tags: [],
               file: null,

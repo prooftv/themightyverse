@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRBAC } from '../../auth/rbac-provider';
 import { dataManager } from '../../../utils/storage/data-store';
+import MediaRenderer from '../../../components/media/media-renderer';
 
 interface Asset {
   id: string;
@@ -11,6 +12,15 @@ interface Asset {
   status: 'pending' | 'approved' | 'rejected';
   submittedBy: string;
   submittedAt: string;
+  fileCid?: string;
+  thumbnailCid?: string;
+  fileName?: string;
+  mimeType?: string;
+  metadata?: {
+    isrc?: string;
+    duration?: number;
+    format?: string;
+  };
 }
 
 export default function AssetsPage() {
@@ -60,6 +70,7 @@ export default function AssetsPage() {
         </div>
       </div>
     );
+  }
 
   if (loading) {
     return (
@@ -95,16 +106,41 @@ export default function AssetsPage() {
           ) : (
             assets.map((asset) => (
             <div key={asset.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-white mb-2">{asset.name}</h3>
-                  <div className="flex flex-wrap gap-4 text-sm mv-text-muted">
-                    <span>Type: {asset.type}</span>
-                    <span>By: {asset.submittedBy}</span>
-                    <span>Date: {asset.submittedAt}</span>
-                  </div>
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                {/* Media Preview */}
+                <div className="lg:col-span-1">
+                  <MediaRenderer
+                    fileCid={asset.fileCid}
+                    thumbnailCid={asset.thumbnailCid}
+                    mimeType={asset.mimeType}
+                    fileName={asset.fileName}
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
                 </div>
-                <div className="flex items-center space-x-4">
+                
+                {/* Asset Details */}
+                <div className="lg:col-span-2">
+                  <h3 className="font-semibold text-white mb-2">{asset.name}</h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm mv-text-muted mb-2">
+                    <span>Type: {asset.type}</span>
+                    <span>Format: {asset.metadata?.format || 'Unknown'}</span>
+                    <span>By: {asset.submittedBy?.slice(0, 8)}...</span>
+                    <span>Date: {new Date(asset.submittedAt).toLocaleDateString()}</span>
+                  </div>
+                  {asset.metadata?.isrc && (
+                    <div className="text-xs mv-text-muted">
+                      ISRC: <code className="bg-white/10 px-1 rounded">{asset.metadata.isrc}</code>
+                    </div>
+                  )}
+                  {asset.metadata?.duration && (
+                    <div className="text-xs mv-text-muted">
+                      Duration: {Math.floor(asset.metadata.duration / 60)}:{(asset.metadata.duration % 60).toString().padStart(2, '0')}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Actions */}
+                <div className="lg:col-span-1 flex flex-col items-end space-y-2">
                   <span className={`px-3 py-1 rounded-full text-sm ${
                     asset.status === 'approved' ? 'bg-green-400/20 text-green-400' :
                     asset.status === 'rejected' ? 'bg-red-400/20 text-red-400' :
@@ -113,16 +149,16 @@ export default function AssetsPage() {
                     {asset.status}
                   </span>
                   {asset.status === 'pending' && (
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col space-y-2 w-full">
                       <button
                         onClick={() => handleApprove(asset.id)}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm"
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm w-full"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleReject(asset.id)}
-                        className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white text-sm"
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white text-sm w-full"
                       >
                         Reject
                       </button>
