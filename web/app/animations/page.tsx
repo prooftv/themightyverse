@@ -43,11 +43,19 @@ export default function Animations() {
   const loadAssets = async () => {
     try {
       const data = await dataManager.getData('assets');
+      console.log('🔍 Raw assets data:', data);
+      
       // Filter for approved video/animation assets
-      const animations = data.filter(asset => 
-        asset.status === 'approved' && 
-        (asset.type === 'animation' || asset.type === 'video' || asset.mimeType?.startsWith('video/'))
-      );
+      const animations = data.filter(asset => {
+        const isApproved = asset.status === 'approved';
+        const isAnimation = asset.type === 'animation' || asset.type === 'video' || asset.mimeType?.startsWith('video/');
+        
+        console.log(`Asset "${asset.name}": status=${asset.status}, type=${asset.type}, mimeType=${asset.mimeType}, approved=${isApproved}, isAnimation=${isAnimation}`);
+        
+        return isApproved && isAnimation;
+      });
+      
+      console.log('🎬 Filtered animations:', animations);
       setAssets(animations);
       if (animations.length > 0) {
         setSelectedAsset(animations[0]);

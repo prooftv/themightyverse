@@ -46,9 +46,20 @@ class DataManager {
   async getStore(): Promise<DataStore> {
     if (!this.store) {
       const stored = localStorage.getItem(STORE_KEY);
+      console.log('💾 LocalStorage data:', stored);
+      
       if (stored) {
-        this.store = JSON.parse(stored);
+        try {
+          this.store = JSON.parse(stored);
+          console.log('📊 Parsed store:', this.store);
+        } catch (error) {
+          console.error('⚠️ Failed to parse localStorage, reinitializing:', error);
+          localStorage.removeItem(STORE_KEY);
+          this.store = null;
+          return this.getStore(); // Retry
+        }
       } else {
+        console.log('🆕 Initializing new empty store');
         // Initialize empty store
         this.store = {
           assets: await ipfsClient.pin([], 'assets-registry'),
@@ -60,6 +71,7 @@ class DataManager {
           roles: await ipfsClient.pin([], 'roles-registry')
         };
         localStorage.setItem(STORE_KEY, JSON.stringify(this.store));
+        console.log('✅ New store created:', this.store);
       }
     }
     return this.store;
@@ -67,7 +79,17 @@ class DataManager {
 
   async getData(type: keyof DataStore): Promise<any[]> {
     const store = await this.getStore();
-    return await ipfsClient.fetch(store[type]);
+    const cid = store[type];
+    console.log(`📁 Fetching ${type} from CID:`, cid);
+    
+    try {
+      const data = await ipfsClient.fetch(cid);
+      console.log(`✅ Successfully fetched ${type}:`, data);
+      return data;
+    } catch (error) {
+      console.error(`⚠️ Failed to fetch ${type} from CID ${cid}:`, error);
+      throw error;
+    }
   }
 
   async saveData(type: keyof DataStore, data: any[]): Promise<void> {
