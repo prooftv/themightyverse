@@ -6,9 +6,10 @@
     "last_updated": "2025-01-27"
   },
   "_admin_wallets": [
-    "0x_ADMIN_WALLET_PLACEHOLDER"
+    "0x860Ec697167Ba865DdE1eC9e172004100613e970"
   ],
   "registry": {
-    "_example_wallet": "ipfs://QmExampleRoleManifestCID"
+    "0x860Ec697167Ba865DdE1eC9e172004100613e970": "ipfs://QmSuperAdminRoleManifest",
+    "0x052B59572dCcF4C515Cd447F6088eEF93Ab1b39f": "ipfs://QmEmailUserRoleManifest"
   }
 }
