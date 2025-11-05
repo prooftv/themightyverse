@@ -23,8 +23,8 @@ interface DashboardStat {
 const quickActions = [
   { name: 'Upload Media', href: '/admin/upload', icon: '⬆️', description: 'Upload audio, video, and visual assets' },
   { name: 'View Assets', href: '/admin/assets', icon: '📋', description: 'Review and manage all assets' },
-  { name: 'Animations Gallery', href: '/animations', icon: '◈', description: 'View uploaded animations and videos' },
-  { name: 'Murals & Cards', href: '/murals', icon: '◉', description: 'Interactive card deck experiences' },
+  { name: 'Manage Animations', href: '/admin/animations', icon: '🎬', description: 'Review and curate animation submissions' },
+  { name: 'View Murals', href: '/murals', icon: '◉', description: 'Interactive card deck experiences' },
   { name: 'Manage Roles', href: '/admin/rbac', icon: '👥', description: 'Assign and manage user roles' },
   { name: 'Campaign Setup', href: '/admin/campaigns', icon: '📢', description: 'Create new advertising campaigns' },
   { name: 'Mint Approval', href: '/admin/mint-queue', icon: '🎯', description: 'Approve pending mint requests' },

@@ -19,10 +19,18 @@ interface Asset {
   mimeType?: string;
   metadata?: {
     duration?: number;
+    renditions?: Array<{
+      cid: string;
+      width?: number;
+      height?: number;
+      bitrate?: number;
+      label?: string;
+    }>;
     isrc?: string;
   };
   creator?: string;
   uploadedAt?: string;
+  curated?: boolean;
 }
 
 export default function Animations() {
@@ -30,37 +38,39 @@ export default function Animations() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(6);
+  const [itemsPerPage] = useState(9);
   
-  const totalPages = Math.ceil(assets.length / itemsPerPage);
+  // Get only approved AND curated animations/videos
+  const filteredAssets = assets.filter(asset => {
+    const isAnimation = asset.type === 'animation' || asset.type === 'video' || asset.mimeType?.startsWith('video/');
+    const isApproved = asset.status === 'approved';
+    const isCurated = asset.curated === true;
+    return isAnimation && isApproved && isCurated;
+  });
+
+  const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedAssets = assets.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedAssets = filteredAssets.slice(startIndex, startIndex + itemsPerPage);
 
   useEffect(() => {
     loadAssets();
   }, []);
-
   const loadAssets = async () => {
     try {
       const data = await dataManager.getData('assets');
-      // Raw assets data is available in `data`.
-      // Filter for approved video/animation assets
-      const animations = data.filter(asset => {
-        const isApproved = asset.status === 'approved';
+      // store raw assets locally
+      setAssets(data || []);
+
+      // pick a featured curated animation to show by default
+      const firstCurated = (data || []).find((asset: Asset) => {
         const isAnimation = asset.type === 'animation' || asset.type === 'video' || asset.mimeType?.startsWith('video/');
-        return isApproved && isAnimation;
+        return isAnimation && asset.status === 'approved' && asset.curated === true;
       });
-      // In debug mode you can inspect animations; otherwise avoid noisy logs
-      if (process.env.NEXT_PUBLIC_DEBUG === 'true') {
-        // eslint-disable-next-line no-console
-        console.log('🎬 Filtered animations:', animations);
-      }
-      setAssets(animations);
-      if (animations.length > 0) {
-        setSelectedAsset(animations[0]);
-      }
-    } catch (error) {
-      console.error('Failed to load assets:', error);
+
+      if (firstCurated) setSelectedAsset(firstCurated);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load assets:', err);
     } finally {
       setLoading(false);
     }
@@ -120,8 +130,8 @@ export default function Animations() {
           </div>
         )}
 
-        {/* Animation Gallery */}
-        {assets.length === 0 ? (
+  {/* Animation Gallery */}
+  {filteredAssets.length === 0 ? (
           <div className="mv-card p-12 text-center">
             <div className="text-6xl mb-4">🎥</div>
             <h3 className="mv-heading-md mb-2">No Animations Yet</h3>
@@ -132,7 +142,7 @@ export default function Animations() {
           </div>
         ) : (
           <>
-            <h2 className="mv-heading-lg mb-6">Animation Gallery ({assets.length})</h2>
+            <h2 className="mv-heading-lg mb-6">Animated Murals ({filteredAssets.length})</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {paginatedAssets.map((asset) => (
                 <div 
@@ -177,7 +187,7 @@ export default function Animations() {
               totalPages={totalPages}
               onPageChange={setCurrentPage}
               itemsPerPage={itemsPerPage}
-              totalItems={assets.length}
+              totalItems={filteredAssets.length}
             />
           </>
         )}

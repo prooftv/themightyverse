@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { dataManager } from '../../utils/storage/data-store';
 import NavigationHeader from '../../components/shared/navigation-header';
 import Pagination from '../../components/shared/pagination';
+import MediaRenderer from '../../components/media/media-renderer';
 
 interface Asset {
   id: string;
