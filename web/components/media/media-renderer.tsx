@@ -94,25 +94,39 @@ export default function MediaRenderer({
   // Video and Animation rendering
   if (mimeType?.startsWith('video/') || fileName?.match(/\.(mp4|mov|webm|gif)$/i)) {
     return (
-      <div className="relative">
+      <div className="relative group">
         <video
           controls
+          controlsList="nodownload"
+          preload="metadata"
           autoPlay={fileName?.includes('.gif')}
           loop={fileName?.includes('.gif')}
           muted={fileName?.includes('.gif')}
-          className={className}
+          className={`${className} bg-black`}
           poster={thumbnailUrl}
           onLoadStart={() => setLoading(false)}
           onError={() => setError(true)}
+          style={{
+            objectFit: 'contain'
+          }}
         >
           <source src={fileUrl} type={mimeType || 'video/mp4'} />
+          <track kind="captions" />
           Your browser does not support video playback.
         </video>
+        
+        {/* Enhanced Loading State */}
         {loading && (
-          <div className={`${className} absolute inset-0 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center`}>
-            <div className="animate-spin text-2xl">◈</div>
+          <div className={`${className} absolute inset-0 bg-black/80 border border-white/10 rounded-lg flex flex-col items-center justify-center`}>
+            <div className="animate-spin text-4xl mb-4 text-yellow-400">◈</div>
+            <div className="text-white text-sm">Loading holographic content...</div>
           </div>
         )}
+        
+        {/* Holographic Overlay Effect */}
+        <div className="absolute inset-0 pointer-events-none opacity-20 group-hover:opacity-30 transition-opacity">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 via-transparent to-blue-400/10 animate-pulse" />
+        </div>
       </div>
     );
   }
