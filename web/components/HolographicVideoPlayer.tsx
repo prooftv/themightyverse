@@ -40,6 +40,17 @@ export default function HolographicVideoPlayer({
 
   const fileUrl = `${gateway}${fileCid}`;
   const thumbnailUrl = thumbnailCid ? `${gateway}${thumbnailCid}` : null;
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('HolographicVideoPlayer Debug:', {
+      fileCid,
+      fileUrl,
+      mimeType,
+      fileName,
+      gateway
+    });
+  }, [fileCid, fileUrl, mimeType, fileName, gateway]);
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -62,6 +73,17 @@ export default function HolographicVideoPlayer({
           <div className="text-4xl mb-2">⚠️</div>
           <div className="text-sm mv-text-muted">Failed to load video</div>
           <div className="text-xs mv-text-muted mt-1">{fileName}</div>
+          <div className="text-xs mv-text-muted mt-2 break-all max-w-xs">
+            URL: {fileUrl}
+          </div>
+          <a 
+            href={fileUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-xs text-yellow-400 hover:text-yellow-300 mt-2 inline-block"
+          >
+            Test Direct Link
+          </a>
         </div>
       </div>
     );
@@ -125,10 +147,19 @@ export default function HolographicVideoPlayer({
           controls
           controlsList="nodownload"
           preload="metadata"
+          crossOrigin="anonymous"
+          playsInline
           className="w-full h-full object-contain relative z-10"
           poster={thumbnailUrl}
           onLoadStart={() => setLoading(false)}
-          onError={() => setError(true)}
+          onLoadedData={() => setLoading(false)}
+          onCanPlay={() => setLoading(false)}
+          onError={(e) => {
+            console.error('Video error:', e);
+            console.error('Video URL:', fileUrl);
+            setError(true);
+            setLoading(false);
+          }}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           style={{

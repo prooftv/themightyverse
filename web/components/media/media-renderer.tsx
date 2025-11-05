@@ -99,13 +99,21 @@ export default function MediaRenderer({
           controls
           controlsList="nodownload"
           preload="metadata"
+          crossOrigin="anonymous"
+          playsInline
           autoPlay={fileName?.includes('.gif')}
           loop={fileName?.includes('.gif')}
           muted={fileName?.includes('.gif')}
           className={`${className} bg-black`}
           poster={thumbnailUrl}
           onLoadStart={() => setLoading(false)}
-          onError={() => setError(true)}
+          onLoadedData={() => setLoading(false)}
+          onCanPlay={() => setLoading(false)}
+          onError={(e) => {
+            console.error('MediaRenderer video error:', e);
+            console.error('Video URL:', fileUrl);
+            setError(true);
+          }}
           style={{
             objectFit: 'contain'
           }}
@@ -119,7 +127,10 @@ export default function MediaRenderer({
         {loading && (
           <div className={`${className} absolute inset-0 bg-black/80 border border-white/10 rounded-lg flex flex-col items-center justify-center`}>
             <div className="animate-spin text-4xl mb-4 text-yellow-400">◈</div>
-            <div className="text-white text-sm">Loading holographic content...</div>
+            <div className="text-white text-sm">Loading content...</div>
+            <div className="text-xs mv-text-muted mt-2 break-all max-w-xs">
+              {fileUrl}
+            </div>
           </div>
         )}
         
