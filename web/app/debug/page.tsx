@@ -28,6 +28,12 @@ export default function DebugPage() {
         <TestStorage />
       </div>
       
+      <div className="mb-8">
+        <a href="/debug/recovery" className="mv-button">
+          🔧 Data Recovery Tool
+        </a>
+      </div>
+      
       <button 
         onClick={runDiagnostic}
         disabled={loading}
