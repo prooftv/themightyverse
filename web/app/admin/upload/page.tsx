@@ -56,10 +56,10 @@ export default function AdminUploadPage() {
   };
 
   const handleFileSelect = async (file: File) => {
-    // Check file size (150MB limit)
-    const maxSize = 150 * 1024 * 1024; // 150MB
+    // Check file size (45MB limit for Vercel)
+    const maxSize = 45 * 1024 * 1024; // 45MB
     if (file.size > maxSize) {
-      alert(`File too large. Maximum size is 150MB, got ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+      alert(`File too large for current hosting. Maximum size is 45MB, got ${(file.size / 1024 / 1024).toFixed(1)}MB. Please compress your file or contact admin for larger uploads.`);
       return;
     }
     
@@ -427,7 +427,7 @@ export default function AdminUploadPage() {
                     {form.file ? form.file.name : 'Click to upload file'}
                   </div>
                   <div className="text-sm mv-text-muted">
-                    {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 150MB'}
+                    {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 45MB'}
                   </div>
                 </label>
               </div>

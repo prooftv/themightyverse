@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "app/api/ipfs/upload/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "api": {
+    "bodyParser": {
+      "sizeLimit": "200mb"
+    }
+  }
+}

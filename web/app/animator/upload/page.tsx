@@ -295,9 +295,9 @@ export default function UploadPage() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      const maxSize = 150 * 1024 * 1024; // 150MB
+                      const maxSize = 45 * 1024 * 1024; // 45MB
                       if (file.size > maxSize) {
-                        alert(`File too large. Maximum size is 150MB, got ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+                        alert(`File too large for current hosting. Maximum size is 45MB, got ${(file.size / 1024 / 1024).toFixed(1)}MB. Please compress your file or contact admin for larger uploads.`);
                         return;
                       }
                       setForm(prev => ({ ...prev, file }));
@@ -314,7 +314,7 @@ export default function UploadPage() {
                     {form.file ? form.file.name : 'Click to upload main file'}
                   </div>
                   <div className="text-sm mv-text-muted">
-                    {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 150MB'}
+                    {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 45MB'}
                   </div>
                 </label>
               </div>
