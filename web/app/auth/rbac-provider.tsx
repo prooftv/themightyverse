@@ -67,10 +67,10 @@ export function RBACProvider({ children }: RBACProviderProps) {
   // Persist session when roles change
   useEffect(() => {
     if (wallet && roles.length > 0) {
-      const session = { wallet, roles };
+      const session = { wallet, roles, expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() };
       if (typeof window !== 'undefined') {
         localStorage.setItem('mv-auth-session', JSON.stringify(session));
-        document.cookie = `rbac-session=${JSON.stringify(session)}; path=/; max-age=86400`;
+        document.cookie = `rbac-session=${btoa(JSON.stringify(session))}; path=/; max-age=86400; SameSite=Lax`;
       }
     }
   }, [wallet, roles]);
@@ -149,7 +149,7 @@ export function RBACProvider({ children }: RBACProviderProps) {
     // Clear session
     if (typeof window !== 'undefined') {
       localStorage.removeItem('mv-auth-session');
-      document.cookie = 'rbac-session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      document.cookie = 'rbac-session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
     }
   }, []);
 

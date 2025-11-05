@@ -33,6 +33,9 @@ export default function EmailSignIn({
       // Connect to RBAC
       await connectWallet(user.walletAddress);
       
+      // Force a small delay to ensure session is persisted
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       onSuccess?.(user.walletAddress);
     } catch (err) {
       setError('Sign-in failed');

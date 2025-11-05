@@ -30,6 +30,10 @@ function AuthConnectContent() {
       saveSession(session);
       
       await connectWallet(superAdminWallet);
+      
+      // Force a small delay to ensure session is persisted
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       router.push(redirect);
     } catch (err) {
       setError('Failed to connect as Super Admin');

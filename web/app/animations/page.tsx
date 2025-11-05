@@ -117,9 +117,9 @@ export default function Animations() {
           <div className="mv-card p-12 text-center">
             <div className="text-6xl mb-4">🎥</div>
             <h3 className="mv-heading-md mb-2">No Animations Yet</h3>
-            <p className="mv-text-muted mb-6">Upload animations through the admin or animator dashboard</p>
-            <Link href="/admin/upload" className="mv-button">
-              Upload Animation
+            <p className="mv-text-muted mb-6">The gallery is empty. Animations will appear here once uploaded by creators.</p>
+            <Link href="/" className="mv-button">
+              Explore Platform
             </Link>
           </div>
         ) : (

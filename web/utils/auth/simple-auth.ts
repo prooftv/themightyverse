@@ -59,8 +59,8 @@ export function createSession(user: SimpleUser): AuthSession {
 export function saveSession(session: AuthSession): void {
   if (typeof window !== 'undefined') {
     localStorage.setItem('mv-auth-session', JSON.stringify(session));
-    // Also set cookie for middleware
-    document.cookie = `rbac-session=${btoa(JSON.stringify(session))}; path=/; max-age=86400`;
+    // Also set cookie for middleware - base64 encoded
+    document.cookie = `rbac-session=${btoa(JSON.stringify(session))}; path=/; max-age=86400; SameSite=Lax`;
   }
 }
 
@@ -81,7 +81,7 @@ export function getSession(): AuthSession | null {
 export function clearSession(): void {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('mv-auth-session');
-    document.cookie = 'rbac-session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    document.cookie = 'rbac-session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
   }
 }
 
