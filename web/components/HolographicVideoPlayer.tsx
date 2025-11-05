@@ -17,13 +17,15 @@ export default function HolographicVideoPlayer({
   mimeType, 
   fileName,
   title,
-  className = "w-full h-96 md:h-[500px] lg:h-[600px]"
+  className = "w-full aspect-video max-h-[60vh] min-h-[220px]"
 }: HolographicVideoPlayerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [holographicIntensity, setHolographicIntensity] = useState(0.7);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const debug = process.env.NEXT_PUBLIC_DEBUG === 'true';
   
   const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
   
@@ -43,14 +45,32 @@ export default function HolographicVideoPlayer({
   
   // Debug logging
   useEffect(() => {
-    console.log('HolographicVideoPlayer Debug:', {
-      fileCid,
-      fileUrl,
-      mimeType,
-      fileName,
-      gateway
-    });
-  }, [fileCid, fileUrl, mimeType, fileName, gateway]);
+    // determine small screen to reduce visual complexity
+    const onResize = () => {
+      try {
+        setIsSmallScreen(window.innerWidth < 640);
+      } catch (e) {
+        setIsSmallScreen(false);
+      }
+    };
+
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    if (debug) {
+      // only log in debug mode to avoid noisy production consoles
+      console.log('HolographicVideoPlayer Debug:', {
+        fileCid,
+        fileUrl,
+        mimeType,
+        fileName,
+        gateway
+      });
+    }
+  }, [fileCid, fileUrl, mimeType, fileName, gateway, debug]);
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -111,8 +131,8 @@ export default function HolographicVideoPlayer({
             }}
           />
           
-          {/* Holographic Rings */}
-          {[...Array(3)].map((_, i) => (
+          {/* Holographic Rings (reduced on small screens) */}
+          {[...Array(isSmallScreen ? 1 : 3)].map((_, i) => (
             <div
               key={i}
               className="absolute rounded-full border border-yellow-400/20"
@@ -124,9 +144,9 @@ export default function HolographicVideoPlayer({
               }}
             />
           ))}
-          
-          {/* Floating Particles */}
-          {[...Array(12)].map((_, i) => (
+
+          {/* Floating Particles (lighter on small screens for perf) */}
+          {[...Array(isSmallScreen ? 4 : 12)].map((_, i) => (
             <div
               key={i}
               className="absolute w-1 h-1 bg-yellow-400 rounded-full"
