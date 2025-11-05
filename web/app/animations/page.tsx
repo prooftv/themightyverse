@@ -112,6 +112,7 @@ export default function Animations() {
                 thumbnailCid={selectedAsset.thumbnailCid}
                 mimeType={selectedAsset.mimeType}
                 fileName={selectedAsset.fileName}
+                renditions={(selectedAsset.metadata as any)?.renditions}
                 title={selectedAsset.name}
                 className="w-full h-96 md:h-[500px] lg:h-[600px]"
               />
