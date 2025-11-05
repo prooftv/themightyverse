@@ -99,6 +99,7 @@ export default function AnimatorDashboard() {
         </div>
       </div>
     );
+  }
 
   if (loading) {
     return (
@@ -106,7 +107,6 @@ export default function AnimatorDashboard() {
         <div className="animate-spin text-6xl">◈</div>
       </div>
     );
-  }
   }
 
   const stats = {
@@ -306,7 +306,9 @@ export default function AnimatorDashboard() {
               </div>
             ))}
           </div>
-          
+        )}
+        
+        {assets.length > 0 && (
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
