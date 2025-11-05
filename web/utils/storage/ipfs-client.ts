@@ -8,32 +8,18 @@ export class IPFSClient {
   private gateway: string;
 
   constructor() {
-    this.apiKey = process.env.PINATA_JWT || '';
+    this.apiKey = ''; // JWT handled server-side
     this.gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
   }
 
   async pin(data: any, name?: string): Promise<string> {
-    if (!this.apiKey) {
-      throw new Error('PINATA_JWT not configured');
-    }
-
     try {
-      const response = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
+      const response = await fetch('/api/ipfs/pin', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          pinataContent: data,
-          pinataMetadata: {
-            name: name || `mv-data-${Date.now()}`,
-            keyvalues: {
-              platform: 'mighty-verse',
-              timestamp: new Date().toISOString()
-            }
-          }
-        })
+        body: JSON.stringify({ data, name })
       });
 
       if (!response.ok) {
@@ -41,7 +27,7 @@ export class IPFSClient {
       }
 
       const result = await response.json();
-      return result.IpfsHash;
+      return result.ipfsHash;
     } catch (error) {
       console.error('IPFS pin error:', error);
       throw error;
@@ -49,22 +35,10 @@ export class IPFSClient {
   }
 
   async pinFile(file: File, name?: string, onProgress?: (progress: number) => void): Promise<string> {
-    if (!this.apiKey) {
-      throw new Error('PINATA_JWT not configured');
-    }
-
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('pinataMetadata', JSON.stringify({
-        name: name || file.name,
-        keyvalues: {
-          platform: 'mighty-verse',
-          fileType: file.type,
-          fileSize: file.size.toString(),
-          timestamp: new Date().toISOString()
-        }
-      }));
+      formData.append('name', name || file.name);
 
       const xhr = new XMLHttpRequest();
       
@@ -79,7 +53,7 @@ export class IPFSClient {
         xhr.addEventListener('load', () => {
           if (xhr.status === 200) {
             const result = JSON.parse(xhr.responseText);
-            resolve(result.IpfsHash);
+            resolve(result.ipfsHash);
           } else {
             reject(new Error(`File upload failed: ${xhr.statusText}`));
           }
@@ -89,8 +63,7 @@ export class IPFSClient {
           reject(new Error('File upload failed'));
         });
 
-        xhr.open('POST', 'https://api.pinata.cloud/pinning/pinFileToIPFS');
-        xhr.setRequestHeader('Authorization', `Bearer ${this.apiKey}`);
+        xhr.open('POST', '/api/ipfs/upload');
         xhr.send(formData);
       });
     } catch (error) {
