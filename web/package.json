@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "mcp:status": "curl -s http://localhost:3000/api/mcp/status | jq",
+    "mcp:agents": "curl -s http://localhost:3000/api/agents/status | jq"
   },
   "dependencies": {
     "@thirdweb-dev/react": "^4.9.4",

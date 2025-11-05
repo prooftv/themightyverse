@@ -9,6 +9,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useAddress, useConnectionStatus } from '@thirdweb-dev/react';
 import { Role, RoleManifest, RoleCheckResult, hasRolePermission } from './roles';
 import { getRoleManifest } from '../../utils/auth/role-manifest';
+import { getSession } from '../../utils/auth/simple-auth';
 
 interface RBACContextType {
   // State
@@ -47,8 +48,18 @@ export function RBACProvider({ children }: RBACProviderProps) {
   const [error, setError] = useState<string | null>(null);
   const [manifest, setManifest] = useState<RoleManifest | null>(null);
   
-  // Use ThirdWeb address as wallet
-  const wallet = address || null;
+  // Use session wallet or ThirdWeb address
+  const [sessionWallet, setSessionWallet] = useState<string | null>(null);
+  const wallet = sessionWallet || address || null;
+
+  // Load session on mount
+  useEffect(() => {
+    const session = getSession();
+    if (session) {
+      setSessionWallet(session.wallet);
+      setRoles(session.roles);
+    }
+  }, []);
 
   /**
    * Load roles for connected wallet
@@ -60,15 +71,26 @@ export function RBACProvider({ children }: RBACProviderProps) {
     setError(null);
     
     try {
+      // Check session first
+      const session = getSession();
+      if (session && session.wallet.toLowerCase() === walletAddress.toLowerCase()) {
+        setRoles(session.roles);
+        setSessionWallet(session.wallet);
+        setManifest(null);
+        return;
+      }
+      
       const roleManifest = await getRoleManifest(walletAddress);
       
       if (roleManifest) {
         setRoles(roleManifest.roles);
         setManifest(roleManifest);
+        setSessionWallet(walletAddress);
       } else {
         // No roles found - user is a viewer by default
         setRoles([Role.VIEWER]);
         setManifest(null);
+        setSessionWallet(walletAddress);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load roles';
@@ -109,6 +131,12 @@ export function RBACProvider({ children }: RBACProviderProps) {
     setRoles([]);
     setManifest(null);
     setError(null);
+    setSessionWallet(null);
+    // Clear session
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('mv-auth-session');
+      document.cookie = 'rbac-session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    }
   }, []);
 
   /**
@@ -134,21 +162,21 @@ export function RBACProvider({ children }: RBACProviderProps) {
   }, [roles]);
 
   // Computed role flags
-  const isAdmin = hasRole(Role.ADMIN);
+  const isAdmin = hasRole(Role.ADMIN) || hasRole(Role.SUPER_ADMIN);
   const isCurator = hasRole(Role.CURATOR);
   const isAnimator = hasRole(Role.ANIMATOR);
   const isSponsor = hasRole(Role.SPONSOR);
 
-  // Auto-load roles when ThirdWeb address changes
+  // Auto-load roles when ThirdWeb address changes or on mount
   useEffect(() => {
     if (address && connectionStatus === 'connected') {
       loadRoles(address);
-    } else if (!address) {
+    } else if (!address && !sessionWallet) {
       setRoles([]);
       setManifest(null);
       setError(null);
     }
-  }, [address, connectionStatus, loadRoles]);
+  }, [address, connectionStatus, loadRoles, sessionWallet]);
 
   const contextValue: RBACContextType = {
     // State

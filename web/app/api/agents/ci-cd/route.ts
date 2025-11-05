@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   return NextResponse.json({
-    agent: 'isrc-generator',
+    agent: 'ci-cd',
     status: 'active',
-    mission: 'ISRC code generation for audio assets'
+    mission: 'Continuous integration and deployment automation'
   });
 }

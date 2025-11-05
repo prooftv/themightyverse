@@ -29,6 +29,7 @@ const quickActions = [
   { name: 'Manage Roles', href: '/admin/rbac', icon: '👥', description: 'Assign and manage user roles' },
   { name: 'Campaign Setup', href: '/admin/campaigns', icon: '📢', description: 'Create new advertising campaigns' },
   { name: 'Mint Approval', href: '/admin/mint-queue', icon: '🎯', description: 'Approve pending mint requests' },
+  { name: 'MCP Control', href: '/admin/mcp', icon: '◈', description: 'Monitor agent coordination and missions' },
 ];
 
 export default function AdminDashboard() {

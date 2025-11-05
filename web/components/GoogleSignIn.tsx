@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRBAC } from '../app/auth/rbac-provider';
-import { createUserFromEmail } from '../utils/auth/simple-auth';
+import { createUserFromEmail, createSession, saveSession } from '../utils/auth/simple-auth';
 
 interface EmailSignInProps {
   className?: string;
@@ -14,8 +14,6 @@ export default function EmailSignIn({
   onSuccess
 }: EmailSignInProps) {
   const [email, setEmail] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [step, setStep] = useState<'email' | 'verify'>('email');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { connectWallet } = useRBAC();
@@ -27,7 +25,14 @@ export default function EmailSignIn({
     
     try {
       const user = createUserFromEmail(email);
+      const session = createSession(user);
+      
+      // Save session for middleware
+      saveSession(session);
+      
+      // Connect to RBAC
       await connectWallet(user.walletAddress);
+      
       onSuccess?.(user.walletAddress);
     } catch (err) {
       setError('Sign-in failed');

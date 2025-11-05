@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAddress } from '@thirdweb-dev/react';
 import { useRBAC } from '../rbac-provider';
 import EmailSignIn from '../../../components/GoogleSignIn';
+import { createSuperAdminSession, saveSession } from '../../../utils/auth/simple-auth';
 
 function AuthConnectContent() {
   const address = useAddress();
@@ -23,6 +24,11 @@ function AuthConnectContent() {
   const handleSuperAdminConnect = async () => {
     try {
       const superAdminWallet = process.env.NEXT_PUBLIC_SUPER_ADMIN_WALLET || '0x860Ec697167Ba865DdE1eC9e172004100613e970';
+      
+      // Create and save super admin session
+      const session = createSuperAdminSession();
+      saveSession(session);
+      
       await connectWallet(superAdminWallet);
       router.push(redirect);
     } catch (err) {

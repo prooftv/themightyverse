@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   return NextResponse.json({
-    agent: 'isrc-generator',
+    agent: 'murals',
     status: 'active',
-    mission: 'ISRC code generation for audio assets'
+    mission: 'Mural assembly and 2.5D composition'
   });
 }

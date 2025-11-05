@@ -60,23 +60,11 @@ export async function middleware(request: NextRequest) {
  */
 async function getUserRoles(request: NextRequest): Promise<Role[] | null> {
   try {
-    // Check for session cookie or JWT token
+    // Check for session cookie
     const sessionToken = request.cookies.get('rbac-session')?.value;
-    const authHeader = request.headers.get('authorization');
     
     if (sessionToken) {
       return await getRolesFromSession(sessionToken);
-    }
-    
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      return await getRolesFromJWT(token);
-    }
-    
-    // Check for wallet address in headers (for API calls)
-    const walletAddress = request.headers.get('x-wallet-address');
-    if (walletAddress) {
-      return await getRolesFromWallet(walletAddress);
     }
     
     return null;
@@ -91,7 +79,6 @@ async function getUserRoles(request: NextRequest): Promise<Role[] | null> {
  */
 async function getRolesFromSession(sessionToken: string): Promise<Role[] | null> {
   try {
-    // Decode session token (implement your session logic)
     const sessionData = JSON.parse(atob(sessionToken));
     
     if (sessionData.expires && new Date(sessionData.expires) < new Date()) {
@@ -105,38 +92,7 @@ async function getRolesFromSession(sessionToken: string): Promise<Role[] | null>
   }
 }
 
-/**
- * Get roles from JWT token
- */
-async function getRolesFromJWT(token: string): Promise<Role[] | null> {
-  try {
-    // Verify and decode JWT (implement your JWT logic)
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    
-    if (payload.exp && payload.exp < Date.now() / 1000) {
-      return null; // Token expired
-    }
-    
-    return payload.roles || null;
-  } catch (error) {
-    console.error('Error decoding JWT:', error);
-    return null;
-  }
-}
 
-/**
- * Get roles from wallet address (fetch from IPFS)
- */
-async function getRolesFromWallet(walletAddress: string): Promise<Role[] | null> {
-  try {
-    // This would typically fetch from your role manifest system
-    // For now, return null to force proper authentication flow
-    return null;
-  } catch (error) {
-    console.error('Error fetching roles for wallet:', error);
-    return null;
-  }
-}
 
 /**
  * Redirect to authentication page
