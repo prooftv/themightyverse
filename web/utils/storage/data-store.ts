@@ -102,6 +102,16 @@ class DataManager {
 
   async addItem(type: keyof DataStore, item: any): Promise<void> {
     const data = await this.getData(type);
+    
+    // Prevent duplicate uploads by checking fileCid
+    if (type === 'assets' && item.fileCid) {
+      const existing = data.find(asset => asset.fileCid === item.fileCid);
+      if (existing) {
+        console.log('⚠️ Duplicate upload prevented:', item.name, 'already exists as:', existing.name);
+        throw new Error(`File already uploaded as "${existing.name}". Duplicate uploads are not allowed.`);
+      }
+    }
+    
     data.push({ ...item, id: Date.now().toString(), createdAt: new Date().toISOString() });
     await this.saveData(type, data);
   }
