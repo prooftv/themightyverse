@@ -5,7 +5,7 @@ const nextConfig = {
   },
   api: {
     bodyParser: {
-      sizeLimit: '100mb',
+      sizeLimit: '200mb',
     },
   },
   serverRuntimeConfig: {
