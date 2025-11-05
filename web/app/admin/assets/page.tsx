@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRBAC } from '../../auth/rbac-provider';
+import { dataManager } from '../../../utils/storage/data-store';
 
 interface Asset {
   id: string;
@@ -14,22 +15,40 @@ interface Asset {
 
 export default function AssetsPage() {
   const { isAdmin } = useRBAC();
-  const [assets, setAssets] = useState<Asset[]>([
-    { id: '1', name: 'Holographic Hero Animation', type: 'animation', status: 'pending', submittedBy: '0x1234...5678', submittedAt: '2025-01-27' },
-    { id: '2', name: 'African Warrior Model', type: '3d-model', status: 'pending', submittedBy: '0x9876...5432', submittedAt: '2025-01-27' },
-    { id: '3', name: 'Golden Shovel Audio', type: 'audio', status: 'approved', submittedBy: '0xabcd...efgh', submittedAt: '2025-01-26' }
-  ]);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleApprove = (id: string) => {
-    setAssets(prev => prev.map(asset => 
-      asset.id === id ? { ...asset, status: 'approved' as const } : asset
-    ));
+  useEffect(() => {
+    loadAssets();
+  }, []);
+
+  const loadAssets = async () => {
+    try {
+      const data = await dataManager.getData('assets');
+      setAssets(data);
+    } catch (error) {
+      console.error('Failed to load assets:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReject = (id: string) => {
-    setAssets(prev => prev.map(asset => 
-      asset.id === id ? { ...asset, status: 'rejected' as const } : asset
-    ));
+  const handleApprove = async (id: string) => {
+    try {
+      await dataManager.updateItem('assets', id, { status: 'approved' });
+      await loadAssets();
+    } catch (error) {
+      console.error('Failed to approve asset:', error);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    try {
+      await dataManager.updateItem('assets', id, { status: 'rejected' });
+      await loadAssets();
+    } catch (error) {
+      console.error('Failed to reject asset:', error);
+    }
   };
 
   if (!isAdmin) {
@@ -39,6 +58,13 @@ export default function AssetsPage() {
           <h1 className="mv-heading-lg text-red-400 mb-4">Access Denied</h1>
           <p className="mv-text-muted">Admin privileges required</p>
         </div>
+      </div>
+    );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin text-6xl">◈</div>
       </div>
     );
   }
@@ -60,7 +86,14 @@ export default function AssetsPage() {
         </div>
 
         <div className="space-y-4">
-          {assets.map((asset) => (
+          {assets.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📋</div>
+              <h3 className="mv-heading-md mb-2">No Assets Submitted Yet</h3>
+              <p className="mv-text-muted">This is a new platform - assets will appear here when submitted</p>
+            </div>
+          ) : (
+            assets.map((asset) => (
             <div key={asset.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
                 <div className="flex-1">
@@ -98,7 +131,8 @@ export default function AssetsPage() {
                 </div>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
