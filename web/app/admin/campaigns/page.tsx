@@ -1,171 +1,180 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { useRBAC } from '../../auth/rbac-provider';
 
 interface Campaign {
   id: string;
   name: string;
-  status: 'draft' | 'active' | 'paused' | 'completed';
+  sponsor: string;
   budget: number;
-  spent: number;
-  impressions: number;
-  clicks: number;
+  status: 'draft' | 'active' | 'paused' | 'completed';
   startDate: string;
   endDate: string;
+  assets: number;
 }
 
-const mockCampaigns: Campaign[] = [
-  { id: '1', name: 'Afrofuturism Launch', status: 'active', budget: 5000, spent: 1250, impressions: 45000, clicks: 890, startDate: '2025-01-20', endDate: '2025-02-20' },
-  { id: '2', name: 'Cultural Heritage', status: 'paused', budget: 3000, spent: 800, impressions: 12000, clicks: 240, startDate: '2025-01-15', endDate: '2025-02-15' },
-  { id: '3', name: 'Holographic Art', status: 'draft', budget: 7500, spent: 0, impressions: 0, clicks: 0, startDate: '2025-02-01', endDate: '2025-03-01' }
-];
+export default function CampaignsPage() {
+  const { isAdmin } = useRBAC();
+  const [campaigns, setCampaigns] = useState<Campaign[]>([
+    { id: '1', name: 'Golden Shovel Legacy', sponsor: 'Heritage Foundation', budget: 50000, status: 'active', startDate: '2025-01-01', endDate: '2025-03-31', assets: 12 },
+    { id: '2', name: 'African Heroes Collection', sponsor: 'Cultural Arts Council', budget: 75000, status: 'draft', startDate: '2025-02-01', endDate: '2025-05-31', assets: 8 }
+  ]);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newCampaign, setNewCampaign] = useState({
+    name: '',
+    sponsor: '',
+    budget: 0,
+    startDate: '',
+    endDate: ''
+  });
 
-export default function AdminCampaigns() {
-  const [campaigns] = useState<Campaign[]>(mockCampaigns);
-  const [filter, setFilter] = useState<'all' | 'active' | 'paused' | 'draft'>('all');
-
-  const filteredCampaigns = campaigns.filter(c => filter === 'all' || c.status === filter);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'mv-status-success';
-      case 'paused': return 'mv-status-pending';
-      case 'draft': return 'bg-gray-400/10 text-gray-400 border border-gray-400/30 rounded-full px-3 py-1 text-sm';
-      case 'completed': return 'bg-blue-400/10 text-blue-400 border border-blue-400/30 rounded-full px-3 py-1 text-sm';
-      default: return 'mv-status-pending';
-    }
+  const handleCreateCampaign = () => {
+    if (!newCampaign.name || !newCampaign.sponsor) return;
+    
+    const campaign: Campaign = {
+      id: Date.now().toString(),
+      ...newCampaign,
+      status: 'draft',
+      assets: 0
+    };
+    
+    setCampaigns(prev => [...prev, campaign]);
+    setNewCampaign({ name: '', sponsor: '', budget: 0, startDate: '', endDate: '' });
+    setShowCreateForm(false);
   };
 
-  return (
-    <div className="mighty-verse-app min-h-screen">
-      <div className="mv-nav mx-4 mt-4">
-        <div className="mv-nav-brand">
-          <Link href="/admin" className="mv-heading-lg hover:text-yellow-400 transition-colors">
-            ◆ Admin / Campaigns
-          </Link>
-        </div>
-        <div>
-          <Link href="/admin/campaigns/new">
-            <button className="mv-button">◆ New Campaign</button>
-          </Link>
+  const handleStatusChange = (id: string, status: Campaign['status']) => {
+    setCampaigns(prev => prev.map(campaign => 
+      campaign.id === id ? { ...campaign, status } : campaign
+    ));
+  };
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="mv-card p-8 text-center">
+          <h1 className="mv-heading-lg text-red-400 mb-4">Access Denied</h1>
+          <p className="mv-text-muted">Admin privileges required</p>
         </div>
       </div>
+    );
+  }
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="mv-heading-xl mb-4">◈ Campaign Management ◈</h1>
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <h1 className="mv-heading-xl mb-4">📢 Campaign Management</h1>
+        <p className="mv-text-muted text-lg">Create and manage advertising campaigns</p>
+      </div>
+
+      {/* Create Campaign */}
+      <div className="mv-card p-6 mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="mv-heading-md">Campaigns ({campaigns.length})</h2>
+          <button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="mv-button"
+          >
+            {showCreateForm ? 'Cancel' : 'Create Campaign'}
+          </button>
         </div>
 
-        {/* Campaign Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="mv-card mv-holographic p-6 text-center">
-            <div className="text-4xl mb-2">◆</div>
-            <div className="mv-heading-md">{campaigns.filter(c => c.status === 'active').length}</div>
-            <div className="mv-text-muted text-sm">Active</div>
-          </div>
-          <div className="mv-card mv-holographic p-6 text-center">
-            <div className="text-4xl mb-2">◈</div>
-            <div className="mv-heading-md">${campaigns.reduce((sum, c) => sum + c.spent, 0).toLocaleString()}</div>
-            <div className="mv-text-muted text-sm">Total Spent</div>
-          </div>
-          <div className="mv-card mv-holographic p-6 text-center">
-            <div className="text-4xl mb-2">◉</div>
-            <div className="mv-heading-md">{campaigns.reduce((sum, c) => sum + c.impressions, 0).toLocaleString()}</div>
-            <div className="mv-text-muted text-sm">Impressions</div>
-          </div>
-          <div className="mv-card mv-holographic p-6 text-center">
-            <div className="text-4xl mb-2">◇</div>
-            <div className="mv-heading-md">{campaigns.reduce((sum, c) => sum + c.clicks, 0).toLocaleString()}</div>
-            <div className="mv-text-muted text-sm">Clicks</div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex gap-4 mb-8 justify-center">
-          {['all', 'active', 'paused', 'draft'].map((status) => (
-            <button
-              key={status}
-              onClick={() => setFilter(status as any)}
-              className={`px-6 py-3 rounded-xl transition-all duration-300 ${
-                filter === status ? 'mv-button' : 'mv-button-secondary'
-              }`}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {/* Campaigns List */}
-        <div className="space-y-6">
-          {filteredCampaigns.map((campaign) => (
-            <div key={campaign.id} className="mv-card mv-holographic p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-green-400 rounded-xl flex items-center justify-center">
-                    <span className="text-black text-lg font-bold">◈</span>
-                  </div>
-                  <div>
-                    <h3 className="mv-heading-md">{campaign.name}</h3>
-                    <div className="mv-text-muted text-sm">
-                      {new Date(campaign.startDate).toLocaleDateString()} - {new Date(campaign.endDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-                <div className={getStatusColor(campaign.status)}>
-                  {campaign.status}
-                </div>
+        {showCreateForm && (
+          <div className="space-y-4 p-4 bg-white/5 rounded-lg border border-white/10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Campaign Name</label>
+                <input
+                  type="text"
+                  value={newCampaign.name}
+                  onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                />
               </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                <div className="bg-white/5 p-3 rounded-xl">
-                  <div className="mv-text-muted text-sm">Budget</div>
-                  <div className="text-white font-semibold">${campaign.budget.toLocaleString()}</div>
-                </div>
-                <div className="bg-white/5 p-3 rounded-xl">
-                  <div className="mv-text-muted text-sm">Spent</div>
-                  <div className="text-white font-semibold">${campaign.spent.toLocaleString()}</div>
-                </div>
-                <div className="bg-white/5 p-3 rounded-xl">
-                  <div className="mv-text-muted text-sm">Impressions</div>
-                  <div className="text-white font-semibold">{campaign.impressions.toLocaleString()}</div>
-                </div>
-                <div className="bg-white/5 p-3 rounded-xl">
-                  <div className="mv-text-muted text-sm">Clicks</div>
-                  <div className="text-white font-semibold">{campaign.clicks.toLocaleString()}</div>
-                </div>
-                <div className="bg-white/5 p-3 rounded-xl">
-                  <div className="mv-text-muted text-sm">CTR</div>
-                  <div className="text-white font-semibold">
-                    {campaign.impressions > 0 ? ((campaign.clicks / campaign.impressions) * 100).toFixed(2) : '0.00'}%
-                  </div>
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Sponsor</label>
+                <input
+                  type="text"
+                  value={newCampaign.sponsor}
+                  onChange={(e) => setNewCampaign(prev => ({ ...prev, sponsor: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                />
               </div>
-
-              {/* Budget Progress */}
-              <div className="mb-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="mv-text-muted">Budget Usage</span>
-                  <span className="text-white">{Math.round((campaign.spent / campaign.budget) * 100)}%</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-yellow-400 to-green-400 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${Math.min((campaign.spent / campaign.budget) * 100, 100)}%` }}
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Budget ($)</label>
+                <input
+                  type="number"
+                  value={newCampaign.budget}
+                  onChange={(e) => setNewCampaign(prev => ({ ...prev, budget: Number(e.target.value) }))}
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                />
               </div>
-
-              <div className="flex gap-2">
-                <button className="mv-button-secondary px-4 py-2 text-sm">◆ Edit</button>
-                <button className="mv-button-secondary px-4 py-2 text-sm">◈ Analytics</button>
-                {campaign.status === 'active' && (
-                  <button className="mv-button-secondary px-4 py-2 text-sm">◇ Pause</button>
-                )}
+              <div>
+                <label className="block text-sm font-medium mb-2">Start Date</label>
+                <input
+                  type="date"
+                  value={newCampaign.startDate}
+                  onChange={(e) => setNewCampaign(prev => ({ ...prev, startDate: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                />
               </div>
             </div>
-          ))}
-        </div>
+            <button onClick={handleCreateCampaign} className="mv-button">
+              Create Campaign
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Campaign List */}
+      <div className="space-y-4">
+        {campaigns.map((campaign) => (
+          <div key={campaign.id} className="mv-card p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
+              <div className="flex-1">
+                <h3 className="font-semibold text-white text-lg mb-2">{campaign.name}</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mv-text-muted">
+                  <div>Sponsor: {campaign.sponsor}</div>
+                  <div>Budget: ${campaign.budget.toLocaleString()}</div>
+                  <div>Assets: {campaign.assets}</div>
+                  <div>Duration: {campaign.startDate} - {campaign.endDate}</div>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className={`px-3 py-1 rounded-full text-sm ${
+                  campaign.status === 'active' ? 'bg-green-400/20 text-green-400' :
+                  campaign.status === 'paused' ? 'bg-yellow-400/20 text-yellow-400' :
+                  campaign.status === 'completed' ? 'bg-blue-400/20 text-blue-400' :
+                  'bg-gray-400/20 text-gray-400'
+                }`}>
+                  {campaign.status}
+                </span>
+                <div className="flex space-x-2">
+                  {campaign.status === 'draft' && (
+                    <button
+                      onClick={() => handleStatusChange(campaign.id, 'active')}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm"
+                    >
+                      Launch
+                    </button>
+                  )}
+                  {campaign.status === 'active' && (
+                    <button
+                      onClick={() => handleStatusChange(campaign.id, 'paused')}
+                      className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-white text-sm"
+                    >
+                      Pause
+                    </button>
+                  )}
+                  <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm">
+                    Edit
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

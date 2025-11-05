@@ -1,164 +1,371 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { useRBAC } from '../../auth/rbac-provider';
 
-export default function AnimatorUpload() {
-  const [dragActive, setDragActive] = useState(false);
+interface UploadForm {
+  name: string;
+  description: string;
+  type: 'animation' | '3d-model' | 'audio' | 'texture';
+  category: string;
+  tags: string[];
+  file: File | null;
+  thumbnail: File | null;
+  metadata: {
+    duration?: number;
+    dimensions?: string;
+    frameRate?: number;
+    format: string;
+  };
+}
+
+export default function UploadPage() {
+  const { isAnimator, isAdmin } = useRBAC();
+  const [form, setForm] = useState<UploadForm>({
+    name: '',
+    description: '',
+    type: 'animation',
+    category: '',
+    tags: [],
+    file: null,
+    thumbnail: null,
+    metadata: {
+      format: ''
+    }
+  });
+  const [tagInput, setTagInput] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
+  const categories = {
+    animation: ['Character Animation', 'Environment', 'Effects', 'UI Animation'],
+    '3d-model': ['Characters', 'Props', 'Environments', 'Vehicles'],
+    audio: ['Music', 'Sound Effects', 'Voice', 'Ambient'],
+    texture: ['Materials', 'Patterns', 'Overlays', 'Backgrounds']
+  };
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !form.tags.includes(tagInput.trim())) {
+      setForm(prev => ({
+        ...prev,
+        tags: [...prev.tags, tagInput.trim()]
+      }));
+      setTagInput('');
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFiles(e.dataTransfer.files);
-    }
+  const handleRemoveTag = (tag: string) => {
+    setForm(prev => ({
+      ...prev,
+      tags: prev.tags.filter(t => t !== tag)
+    }));
   };
 
-  const handleFiles = (files: FileList) => {
-    setIsUploading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.file || !form.name) return;
+
+    setUploading(true);
+    setUploadProgress(0);
+
     // Simulate upload progress
-    let progress = 0;
     const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setIsUploading(false);
-          setUploadProgress(0);
-        }, 1000);
-      }
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setUploading(false);
+          // Reset form
+          setForm({
+            name: '',
+            description: '',
+            type: 'animation',
+            category: '',
+            tags: [],
+            file: null,
+            thumbnail: null,
+            metadata: { format: '' }
+          });
+          return 100;
+        }
+        return prev + 10;
+      });
     }, 200);
   };
 
-  return (
-    <div className="mighty-verse-app min-h-screen">
-      <div className="mv-nav mx-4 mt-4">
-        <div className="mv-nav-brand">
-          <Link href="/animator" className="mv-heading-lg hover:text-yellow-400 transition-colors">
-            ◈ Animator / Upload
-          </Link>
+  if (!isAnimator && !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="mv-card p-8 text-center">
+          <h1 className="mv-heading-lg text-red-400 mb-4">Access Denied</h1>
+          <p className="mv-text-muted">Animator privileges required</p>
         </div>
       </div>
+    );
+  }
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="mv-heading-xl mb-4">◈ Upload Asset ◈</h1>
-          <p className="mv-text-muted text-lg">Submit your 2.5D holographic creation</p>
-        </div>
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <h1 className="mv-heading-xl mb-4">📤 Upload Asset</h1>
+        <p className="mv-text-muted text-lg">Upload your holographic creations to The Mighty Verse</p>
+      </div>
 
-        {/* Upload Area */}
-        <div className="mv-card mv-holographic p-12 mb-8">
-          <div
-            className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
-              dragActive ? 'border-yellow-400 bg-yellow-400/10' : 'border-white/20'
-            }`}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-          >
-            {isUploading ? (
-              <div className="space-y-6">
-                <div className="text-8xl animate-spin">◈</div>
-                <div className="space-y-2">
-                  <div className="mv-heading-md">Uploading...</div>
-                  <div className="w-full bg-white/10 rounded-full h-3">
-                    <div 
-                      className="bg-gradient-to-r from-yellow-400 to-green-400 h-3 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                  <div className="mv-text-muted">{uploadProgress}% complete</div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="text-8xl mb-6">◈</div>
-                <div className="space-y-2">
-                  <div className="mv-heading-md">Drop your files here</div>
-                  <div className="mv-text-muted">or click to browse</div>
-                </div>
-                <input
-                  type="file"
-                  multiple
-                  accept=".mp4,.mov,.avi,.mp3,.wav,.glb,.fbx,.obj"
-                  className="hidden"
-                  onChange={(e) => e.target.files && handleFiles(e.target.files)}
-                  id="file-upload"
-                />
-                <label htmlFor="file-upload" className="mv-button cursor-pointer inline-block">
-                  ◆ Select Files ◆
-                </label>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Asset Details Form */}
-        <div className="mv-card p-8 space-y-6">
-          <h3 className="mv-heading-md mb-6">Asset Details</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit} className="mv-card p-6 space-y-6">
+        {/* Basic Information */}
+        <div>
+          <h2 className="mv-heading-md mb-4">Basic Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block mv-text-muted text-sm mb-2">Title</label>
-              <input 
-                type="text" 
-                className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors"
-                placeholder="Enter asset title"
+              <label className="block text-sm font-medium mb-2">Asset Name *</label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter asset name"
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50"
+                required
               />
             </div>
-            
             <div>
-              <label className="block mv-text-muted text-sm mb-2">Type</label>
-              <select className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors">
-                <option value="">Select type</option>
-                <option value="audio">◆ Audio</option>
-                <option value="animation">◈ Animation</option>
-                <option value="3d">◉ 3D Model</option>
+              <label className="block text-sm font-medium mb-2">Asset Type *</label>
+              <select
+                value={form.type}
+                onChange={(e) => setForm(prev => ({ 
+                  ...prev, 
+                  type: e.target.value as UploadForm['type'],
+                  category: '' 
+                }))}
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                required
+              >
+                <option value="animation">Animation</option>
+                <option value="3d-model">3D Model</option>
+                <option value="audio">Audio</option>
+                <option value="texture">Texture</option>
               </select>
             </div>
           </div>
-
-          <div>
-            <label className="block mv-text-muted text-sm mb-2">Description</label>
-            <textarea 
-              className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors h-32 resize-none"
+          
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-2">Description</label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Describe your asset..."
+              rows={3}
+              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50"
             />
           </div>
 
-          <div>
-            <label className="block mv-text-muted text-sm mb-2">Tags</label>
-            <input 
-              type="text" 
-              className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors"
-              placeholder="african, futuristic, holographic (comma separated)"
-            />
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <button className="mv-button flex-1">◆ Submit for Review ◆</button>
-            <Link href="/animator">
-              <button className="mv-button-secondary px-8">Cancel</button>
-            </Link>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Category</label>
+              <select
+                value={form.category}
+                onChange={(e) => setForm(prev => ({ ...prev, category: e.target.value }))}
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+              >
+                <option value="">Select category</option>
+                {categories[form.type].map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Format</label>
+              <input
+                type="text"
+                value={form.metadata.format}
+                onChange={(e) => setForm(prev => ({ 
+                  ...prev, 
+                  metadata: { ...prev.metadata, format: e.target.value }
+                }))}
+                placeholder="e.g., MP4, FBX, WAV"
+                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50"
+              />
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Tags */}
+        <div>
+          <h2 className="mv-heading-md mb-4">Tags</h2>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {form.tags.map(tag => (
+              <span
+                key={tag}
+                className="px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded-full text-sm flex items-center space-x-2"
+              >
+                <span>{tag}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="text-yellow-400 hover:text-red-400"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+              placeholder="Add tags..."
+              className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50"
+            />
+            <button
+              type="button"
+              onClick={handleAddTag}
+              className="px-4 py-2 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+
+        {/* File Upload */}
+        <div>
+          <h2 className="mv-heading-md mb-4">Files</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Main File *</label>
+              <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  onChange={(e) => setForm(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
+                  accept=".mp4,.mov,.fbx,.obj,.mp3,.wav,.jpg,.png,.glb,.gltf"
+                  className="hidden"
+                  id="main-file"
+                  required
+                />
+                <label htmlFor="main-file" className="cursor-pointer">
+                  <div className="text-4xl mb-2">📁</div>
+                  <div className="text-white mb-1">
+                    {form.file ? form.file.name : 'Click to upload main file'}
+                  </div>
+                  <div className="text-sm mv-text-muted">
+                    {form.file ? `${(form.file.size / 1024 / 1024).toFixed(1)} MB` : 'Max 100MB'}
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-2">Thumbnail (Optional)</label>
+              <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  onChange={(e) => setForm(prev => ({ ...prev, thumbnail: e.target.files?.[0] || null }))}
+                  accept=".jpg,.jpeg,.png,.webp"
+                  className="hidden"
+                  id="thumbnail-file"
+                />
+                <label htmlFor="thumbnail-file" className="cursor-pointer">
+                  <div className="text-4xl mb-2">🖼️</div>
+                  <div className="text-white mb-1">
+                    {form.thumbnail ? form.thumbnail.name : 'Click to upload thumbnail'}
+                  </div>
+                  <div className="text-sm mv-text-muted">
+                    {form.thumbnail ? `${(form.thumbnail.size / 1024 / 1024).toFixed(1)} MB` : 'JPG, PNG (Max 5MB)'}
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Metadata */}
+        {form.type === 'animation' && (
+          <div>
+            <h2 className="mv-heading-md mb-4">Animation Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Duration (seconds)</label>
+                <input
+                  type="number"
+                  value={form.metadata.duration || ''}
+                  onChange={(e) => setForm(prev => ({ 
+                    ...prev, 
+                    metadata: { ...prev.metadata, duration: Number(e.target.value) }
+                  }))}
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Frame Rate (fps)</label>
+                <input
+                  type="number"
+                  value={form.metadata.frameRate || ''}
+                  onChange={(e) => setForm(prev => ({ 
+                    ...prev, 
+                    metadata: { ...prev.metadata, frameRate: Number(e.target.value) }
+                  }))}
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Dimensions</label>
+                <input
+                  type="text"
+                  value={form.metadata.dimensions || ''}
+                  onChange={(e) => setForm(prev => ({ 
+                    ...prev, 
+                    metadata: { ...prev.metadata, dimensions: e.target.value }
+                  }))}
+                  placeholder="1920x1080"
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Progress */}
+        {uploading && (
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">Uploading...</span>
+              <span className="text-sm mv-text-muted">{uploadProgress}%</span>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-yellow-400 to-green-400 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Submit */}
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <button
+            type="submit"
+            disabled={uploading || !form.file || !form.name}
+            className="mv-button flex-1"
+          >
+            {uploading ? 'Uploading...' : 'Upload Asset'}
+          </button>
+          <button
+            type="button"
+            className="mv-button-secondary flex-1"
+            onClick={() => setForm({
+              name: '',
+              description: '',
+              type: 'animation',
+              category: '',
+              tags: [],
+              file: null,
+              thumbnail: null,
+              metadata: { format: '' }
+            })}
+          >
+            Clear Form
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
