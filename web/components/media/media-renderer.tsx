@@ -91,18 +91,21 @@ export default function MediaRenderer({
     );
   }
 
-  // Video rendering
-  if (mimeType?.startsWith('video/')) {
+  // Video and Animation rendering
+  if (mimeType?.startsWith('video/') || fileName?.match(/\.(mp4|mov|webm|gif)$/i)) {
     return (
       <div className="relative">
         <video
           controls
+          autoPlay={fileName?.includes('.gif')}
+          loop={fileName?.includes('.gif')}
+          muted={fileName?.includes('.gif')}
           className={className}
           poster={thumbnailUrl}
           onLoadStart={() => setLoading(false)}
           onError={() => setError(true)}
         >
-          <source src={fileUrl} type={mimeType} />
+          <source src={fileUrl} type={mimeType || 'video/mp4'} />
           Your browser does not support video playback.
         </video>
         {loading && (

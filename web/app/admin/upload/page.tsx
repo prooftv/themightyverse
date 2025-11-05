@@ -391,7 +391,7 @@ export default function AdminUploadPage() {
                 <input
                   type="file"
                   onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                  accept=".mp4,.mov,.mp3,.wav,.jpg,.png,.gif,.webp,.fbx,.obj,.glb,.gltf"
+                  accept=".mp4,.mov,.avi,.webm,.gif,.mp3,.wav,.flac,.ogg,.jpg,.jpeg,.png,.webp,.svg,.fbx,.obj,.glb,.gltf,.blend"
                   className="hidden"
                   id="main-file"
                   required

@@ -276,7 +276,7 @@ export default function UploadPage() {
                 <input
                   type="file"
                   onChange={(e) => setForm(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
-                  accept=".mp4,.mov,.fbx,.obj,.mp3,.wav,.jpg,.png,.glb,.gltf"
+                  accept=".mp4,.mov,.avi,.webm,.gif,.mp3,.wav,.flac,.ogg,.jpg,.jpeg,.png,.webp,.svg,.fbx,.obj,.glb,.gltf,.blend"
                   className="hidden"
                   id="main-file"
                   required
