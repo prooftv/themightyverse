@@ -63,7 +63,7 @@ export default function AdminUploadPage() {
         setForm(prev => ({
           ...prev,
           type: 'audio',
-          tags: [...new Set([...prev.tags, ...autoTags])],
+          tags: Array.from(new Set([...prev.tags, ...autoTags])),
           metadata: { 
             ...prev.metadata, 
             isrc, 
@@ -99,7 +99,7 @@ export default function AdminUploadPage() {
         setForm(prev => ({
           ...prev,
           type: 'video',
-          tags: [...new Set([...prev.tags, ...autoTags])],
+          tags: Array.from(new Set([...prev.tags, ...autoTags])),
           metadata: { 
             ...prev.metadata, 
             isrc, 
@@ -122,7 +122,7 @@ export default function AdminUploadPage() {
       const autoTags = mediaTagger.generateAutoTags(file);
       setForm(prev => ({
         ...prev,
-        tags: [...new Set([...prev.tags, ...autoTags])],
+        tags: Array.from(new Set([...prev.tags, ...autoTags])),
         metadata: { ...prev.metadata, format: file.type }
       }));
     }

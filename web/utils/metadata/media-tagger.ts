@@ -179,7 +179,7 @@ class MediaTagger {
     if (fileName.includes('instrumental')) tags.push('instrumental');
     if (fileName.includes('demo') || fileName.includes('preview')) tags.push('demo');
     
-    return [...new Set(tags)]; // Remove duplicates
+    return Array.from(new Set(tags)); // Remove duplicates
   }
 
   /**

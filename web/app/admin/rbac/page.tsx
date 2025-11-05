@@ -61,13 +61,7 @@ export default function RBACPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin text-6xl">◈</div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
