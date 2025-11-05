@@ -2,6 +2,7 @@
   "buildCommand": "cd web && npm run build",
   "outputDirectory": "web/.next",
   "framework": "nextjs",
+  "installCommand": "cd web && npm install",
   "functions": {
     "web/app/api/agents/**/*.js": {
       "runtime": "nodejs18.x",
