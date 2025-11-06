@@ -145,6 +145,42 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+      {/* Livepeer Test */}
+      <div className="mv-card p-4 sm:p-6 mb-8">
+        <h3 className="mv-heading-md mb-4">🚀 Livepeer Integration Test</h3>
+        <div className="space-y-4">
+          <div className="bg-blue-900/20 border border-blue-400/20 rounded p-4">
+            <p className="text-sm mb-4">Test the Livepeer integration with your IPFS video. This will import your video to Livepeer for fast streaming.</p>
+            <div className="flex space-x-4">
+              <input 
+                type="text" 
+                placeholder="Enter IPFS CID of test video"
+                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded text-white"
+                id="testCid"
+              />
+              <button 
+                onClick={async () => {
+                  const cid = (document.getElementById('testCid') as HTMLInputElement).value;
+                  if (!cid) return alert('Enter CID');
+                  
+                  const response = await fetch('/api/livepeer/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ipfsCid: cid, name: 'Test Video', uploaderWallet: wallet })
+                  });
+                  
+                  const result = await response.json();
+                  alert(result.success ? 'Import started!' : 'Import failed: ' + result.error);
+                }}
+                className="mv-button"
+              >
+                Import to Livepeer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Recent Activity */}
       <div className="mv-card p-4 sm:p-6">
           <h3 className="mv-heading-md mb-6">Recent Activity</h3>

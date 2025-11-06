@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface MediaRendererProps {
   fileCid?: string;
@@ -19,8 +19,26 @@ export default function MediaRenderer({
 }: MediaRendererProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [livepeerPlaybackId, setLivepeerPlaybackId] = useState<string | null>(null);
+  const [useIpfs, setUseIpfs] = useState(false);
   
   const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
+  
+  // Check for Livepeer stream availability
+  useEffect(() => {
+    if (fileCid && (mimeType?.startsWith('video/') || fileName?.match(/\.(mp4|mov|webm)$/i))) {
+      fetch(`/api/livepeer/stream?cid=${fileCid}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.playbackId) {
+            setLivepeerPlaybackId(data.playbackId);
+          } else {
+            setUseIpfs(true);
+          }
+        })
+        .catch(() => setUseIpfs(true));
+    }
+  }, [fileCid, mimeType, fileName]);
   
   if (!fileCid) {
     return (
@@ -93,44 +111,80 @@ export default function MediaRenderer({
 
   // Video and Animation rendering
   if (mimeType?.startsWith('video/') || fileName?.match(/\.(mp4|mov|webm|gif)$/i)) {
+    const videoUrl = livepeerPlaybackId && !useIpfs 
+      ? `https://cdn.livepeer.studio/hls/${livepeerPlaybackId}/index.m3u8`
+      : fileUrl;
+    
+    const isLivepeer = livepeerPlaybackId && !useIpfs;
+    
     return (
       <div className="relative group">
-        <video
-          controls
-          controlsList="nodownload"
-          preload="metadata"
-          crossOrigin="anonymous"
-          playsInline
-          autoPlay={fileName?.includes('.gif')}
-          loop={fileName?.includes('.gif')}
-          muted={fileName?.includes('.gif')}
-          className={`${className} bg-black`}
-          poster={thumbnailUrl}
-          onLoadStart={() => setLoading(false)}
-          onLoadedData={() => setLoading(false)}
-          onCanPlay={() => setLoading(false)}
-          onError={(e) => {
-            console.error('MediaRenderer video error:', e);
-            console.error('Video URL:', fileUrl);
-            setError(true);
-          }}
-          style={{
-            objectFit: 'contain'
-          }}
-        >
-          <source src={fileUrl} type={mimeType || 'video/mp4'} />
-          <track kind="captions" />
-          Your browser does not support video playback.
-        </video>
+        {isLivepeer ? (
+          <video
+            controls
+            controlsList="nodownload"
+            preload="metadata"
+            playsInline
+            className={`${className} bg-black`}
+            poster={thumbnailUrl}
+            onLoadStart={() => setLoading(false)}
+            onLoadedData={() => setLoading(false)}
+            onCanPlay={() => setLoading(false)}
+            onError={() => {
+              console.log('Livepeer failed, falling back to IPFS');
+              setUseIpfs(true);
+            }}
+            style={{ objectFit: 'contain' }}
+          >
+            <source src={videoUrl} type="application/x-mpegURL" />
+            <track kind="captions" />
+            Your browser does not support video playback.
+          </video>
+        ) : (
+          <video
+            controls
+            controlsList="nodownload"
+            preload="metadata"
+            crossOrigin="anonymous"
+            playsInline
+            autoPlay={fileName?.includes('.gif')}
+            loop={fileName?.includes('.gif')}
+            muted={fileName?.includes('.gif')}
+            className={`${className} bg-black`}
+            poster={thumbnailUrl}
+            onLoadStart={() => setLoading(false)}
+            onLoadedData={() => setLoading(false)}
+            onCanPlay={() => setLoading(false)}
+            onError={(e) => {
+              console.error('MediaRenderer video error:', e);
+              console.error('Video URL:', fileUrl);
+              setError(true);
+            }}
+            style={{ objectFit: 'contain' }}
+          >
+            <source src={fileUrl} type={mimeType || 'video/mp4'} />
+            <track kind="captions" />
+            Your browser does not support video playback.
+          </video>
+        )}
         
         {/* Enhanced Loading State */}
         {loading && (
           <div className={`${className} absolute inset-0 bg-black/80 border border-white/10 rounded-lg flex flex-col items-center justify-center`}>
             <div className="animate-spin text-4xl mb-4 text-yellow-400">◈</div>
-            <div className="text-white text-sm">Loading content...</div>
-            <div className="text-xs mv-text-muted mt-2 break-all max-w-xs">
-              {fileUrl}
+            <div className="text-white text-sm">
+              {isLivepeer ? 'Loading optimized stream...' : 'Loading content...'}
             </div>
+            <div className="text-xs mv-text-muted mt-2 break-all max-w-xs">
+              {isLivepeer ? 'Livepeer CDN' : fileUrl}
+            </div>
+          </div>
+        )}
+        
+        {/* Performance Indicator */}
+        {isLivepeer && (
+          <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded">
+            ⚡ Fast
           </div>
         )}
         

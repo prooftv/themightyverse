@@ -12,6 +12,7 @@
     "mcp:agents": "curl -s http://localhost:3000/api/agents/status | jq"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
     "@thirdweb-dev/react": "^4.9.4",
     "@thirdweb-dev/sdk": "^4.0.98",
     "@thirdweb-dev/wallets": "^2.4.37",
